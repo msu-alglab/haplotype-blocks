@@ -80,13 +80,14 @@ def process_repeats(repeats, long_string, locs):
         snps = overall_length//SNP_LENGTH
         print("Number of snps: {}".format(snps))
         # figure out which paths
-        closest_to_end = 10000000000000
+        indices = []
         for start in starts:
             end = start + length - 1
             for key in locs:
                 if start >= key[0] and end <= key[1]:
                     name = locs[key]
-            print(name)
+            indices.append(str(name))
+        print(" ".join(indices))
 
 
 def get_path_locs(TERMINATION_LENGTH):
