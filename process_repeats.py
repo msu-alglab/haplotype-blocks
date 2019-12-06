@@ -46,8 +46,6 @@ def get_distinct_repeats(long_string):
 
 def process_repeats(repeats, long_string, locs, snp_length):
     for repeat in repeats:
-        print("Repeat of length {} with {} occurrences".format(repeat[1],
-                                    len(repeat[0])))
         starts = repeat[0]
         length = repeat[1]
         start = starts[0]
@@ -72,6 +70,17 @@ def process_repeats(repeats, long_string, locs, snp_length):
             raise ValueError("Repeat is not left-maximal")
         if len(one_rights) == 1:
             raise ValueError("Repeat is not right-maximal")
+
+        # figure out which paths
+        indices = []
+        for start in starts:
+            end = start + length - 1
+            for key in locs:
+                if start >= key[0] and end <= key[1]:
+                    name = locs[key]
+            indices.append(str(name))
+        print(" ".join(indices))
+
         # figure out which snps
         start_index = occ.find('S')
         index = start_index + 1
@@ -93,20 +102,6 @@ def process_repeats(repeats, long_string, locs, snp_length):
                 raise ValueError("State was not O or N")
             snps.append(snp_id + ":" + state)
         print(' '.join(snps))
-
-
-
-
-
-        # figure out which paths
-        indices = []
-        for start in starts:
-            end = start + length - 1
-            for key in locs:
-                if start >= key[0] and end <= key[1]:
-                    name = locs[key]
-            indices.append(str(name))
-        print(" ".join(indices))
 
 
 def get_path_locs(TERMINATION_LENGTH):
