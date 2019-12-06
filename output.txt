@@ -1,0 +1,25 @@
+Repeat of length 1764 with 2 occurrences
+Number of snps: 98
+5311
+5395
+Repeat of length 1407 with 3 occurrences
+Number of snps: 78
+6152
+6688
+7039
+Repeat of length 1262 with 2 occurrences
+Number of snps: 70
+205
+5746
+Repeat of length 1462 with 2 occurrences
+Number of snps: 81
+6688
+7039
+Repeat of length 1101 with 2 occurrences
+Number of snps: 61
+5469
+5790
+Repeat of length 1097 with 2 occurrences
+Number of snps: 60
+5741
+6576
