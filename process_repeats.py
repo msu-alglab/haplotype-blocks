@@ -44,7 +44,7 @@ def get_distinct_repeats(long_string):
 
     return clean_repeats
 
-def process_repeats(repeats, long_string, locs):
+def process_repeats(repeats, long_string, locs, snp_length):
     for repeat in repeats:
         print("Repeat of length {} with {} occurrences".format(repeat[1],
                                     len(repeat[0])))
@@ -72,13 +72,32 @@ def process_repeats(repeats, long_string, locs):
             raise ValueError("Repeat is not left-maximal")
         if len(one_rights) == 1:
             raise ValueError("Repeat is not right-maximal")
-        # figure out how many snps
-        start_index = occ.find('A')
-        if occ[start_index + 1] == 'A':
-            start_index += 1
-        overall_length = len(occ) - start_index
-        snps = overall_length//SNP_LENGTH
-        print("Number of snps: {}".format(snps))
+        # figure out which snps
+        start_index = occ.find('S')
+        index = start_index + 1
+        occ = occ[index:]
+        snps = []
+        while len(occ) >= snp_length + 1:
+            snp = occ[:snp_length]
+            occ = occ[snp_length:]
+            snp = snp.replace("C", "0")
+            snp = snp.replace("G", "1")
+            snp_id = str(int(snp, 2))
+            state = occ[0]
+            occ = occ[2:]
+            if state == "O":
+                state = "0"
+            elif state == "N":
+                state = "1"
+            else:
+                raise ValueError("State was not O or N")
+            snps.append(snp_id + ":" + state)
+        print(' '.join(snps))
+
+
+
+
+
         # figure out which paths
         indices = []
         for start in starts:
@@ -112,8 +131,9 @@ def get_path_locs(TERMINATION_LENGTH):
 
 if __name__ == "__main__":
     SNP_LENGTH = 18
-    FILENAME =  "yeast10_k100.fa"
+    FILENAME =  "yeast10_k1000.fa"
     TERMINATION_LENGTH = 13
+    SNP_ENCODING_LENGTH = 11
 
     f = open(FILENAME, "r")
     # get rid of header line
@@ -125,4 +145,4 @@ if __name__ == "__main__":
     locs = get_path_locs(TERMINATION_LENGTH)
 
     clean_repeats = get_distinct_repeats(long_string)
-    process_repeats(clean_repeats, long_string, locs)
+    process_repeats(clean_repeats, long_string, locs, SNP_ENCODING_LENGTH)
