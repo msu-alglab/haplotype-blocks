@@ -1,3 +1,6 @@
+import scipy.special
+import networkx as nx
+
 def get_distinct_repeats(long_string):
     """Find distinct repeats from repeat file."""
 
@@ -133,6 +136,49 @@ def get_path_locs(TERMINATION_LENGTH):
         counter = counter % 3
     return locs
 
+
+def get_repeats():
+    """Use connected components approach to find repeats."""
+    f = open("repeats.txt", "r")
+    f.readline()
+    f.readline()
+    lines = f.readlines()
+    g = nx.Graph()
+    for line in lines:
+        start1 = int(line.split()[0])
+        start2 = int(line.split()[1])
+        length = int(line.split()[2])
+        g.add_edge(start1, start2, length=length)
+    print("# connected components:",
+        nx.number_connected_components(g))
+    connected_components = nx.connected_components(g)
+    repeats = []
+    for c in connected_components:
+        print("#### Processing connected component", c)
+        weights = []
+        for node1 in c:
+            for node2 in c:
+                if node1 < node2:
+                    if g.has_edge(node1, node2):
+                        attributes = g.get_edge_data(node1, node2)
+                        weights.append(attributes["length"])
+        weights = list(set(weights))
+        for weight in weights:
+            hap_block = []
+            for node1 in c:
+                for node2 in c:
+                    if node1 < node2:
+                        if g.has_edge(node1, node2):
+                            if g.get_edge_data(node1, node2)["length"]\
+                                             >= weight:
+                                hap_block.append(node1)
+                                hap_block.append(node2)
+            hap_block = list(set(hap_block))
+            print("hap block for weight {}: {}".format(
+                        weight,
+                        hap_block))
+
+
 if __name__ == "__main__":
     SNP_LENGTH = 18
     FILENAME =  "yeast10_k1000.fa"
@@ -147,6 +193,7 @@ if __name__ == "__main__":
     long_string = ''.join(lines).strip()
 
     locs = get_path_locs(TERMINATION_LENGTH)
+    get_repeats()
+    #clean_repeats = get_distinct_repeats(long_string)
 
-    check_repeats(clean_repeats)
-    process_repeats(clean_repeats, long_string, locs, SNP_ENCODING_LENGTH)
+    #process_repeats(clean_repeats, long_string, locs, SNP_ENCODING_LENGTH)
