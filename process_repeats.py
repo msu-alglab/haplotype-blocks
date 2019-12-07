@@ -48,7 +48,7 @@ def process_repeats(repeats, long_string, locs, snp_length):
     for repeat in repeats:
         starts = repeat[0]
         length = repeat[1]
-        print("Length of this repeat is {}".format(length))
+        #print("Length of this repeat is {}".format(length))
         start = starts[0]
         end = start + length
         occ = long_string[start:end]
@@ -86,25 +86,31 @@ def process_repeats(repeats, long_string, locs, snp_length):
 
         # figure out which snps
         start_index = occ.find('S')
-        index = start_index + 1
-        occ = occ[index:]
-        snps = []
-        while len(occ) >= snp_length + 1:
-            snp = occ[:snp_length]
-            occ = occ[snp_length:]
-            snp = snp.replace("C", "0")
-            snp = snp.replace("G", "1")
-            snp_id = str(int(snp, 2))
-            state = occ[0]
-            occ = occ[2:]
-            if state == "O":
-                state_out = "0"
-            elif state == "N":
-                state_out = "1"
-            else:
-                raise ValueError("State was not O or N")
-            snps.append(snp_id + ":" + state_out)
-        print(' '.join(snps))
+        if start_index == -1:
+            print("No SNPS")
+        else:
+            index = start_index + 1
+            occ = occ[index:]
+            snps = []
+            if len(occ) < snp_length + 1:
+                print("No SPS")
+            while len(occ) >= snp_length + 1:
+                snp = occ[:snp_length]
+                occ = occ[snp_length:]
+                snp = snp.replace("C", "0")
+                snp = snp.replace("G", "1")
+                snp_id = str(int(snp, 2))
+                state = occ[0]
+                occ = occ[2:]
+                if state == "O":
+                    state_out = "0"
+                elif state == "N":
+                    state_out = "1"
+                else:
+                    raise ValueError("State was not O or N")
+                snps.append(snp_id + ":" + state_out)
+            if len(snps) > 0:
+                print(' '.join(snps))
 
 
 def get_path_locs(TERMINATION_LENGTH):
@@ -142,5 +148,5 @@ if __name__ == "__main__":
 
     locs = get_path_locs(TERMINATION_LENGTH)
 
-    clean_repeats = get_distinct_repeats(long_string)
+    check_repeats(clean_repeats)
     process_repeats(clean_repeats, long_string, locs, SNP_ENCODING_LENGTH)
