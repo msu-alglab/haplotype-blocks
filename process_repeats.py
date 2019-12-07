@@ -1,19 +1,15 @@
 import scipy.special
 import networkx as nx
 
-def get_distinct_repeats(long_string):
+def get_distinct_repeats(repeats, long_string):
     """Find distinct repeats from repeat file."""
 
     # build a dict by length
     f = open("repeats.txt", "r")
     lines = f.readlines()
-    repeats = []
     repeat_dict = {}
-    for line in lines[2:]:
-        start1 = int(line.split()[0])
-        start2 = int(line.split()[1])
-        length = int(line.split()[2])
-        repeats.append((start1,start2, length))
+    for repeat in repeats:
+        start1, start2, length = repeat
         if not length in repeat_dict:
             repeat_dict[length] = []
         repeat_dict[length].append(start1)
@@ -177,6 +173,15 @@ def get_repeats():
             print("hap block for weight {}: {}".format(
                         weight,
                         hap_block))
+            for start1 in hap_block:
+                for start2 in hap_block:
+                    if start1 < start2:
+                        repeats.append((start1, start2, weight))
+                        print("Adding {}, {}, {}".format(
+                                    start1,
+                                    start2,
+                                    weight))
+    return repeats
 
 
 if __name__ == "__main__":
@@ -192,7 +197,7 @@ if __name__ == "__main__":
     long_string = ''.join(lines).strip()
 
     locs = get_path_locs(TERMINATION_LENGTH)
-    get_repeats()
-    #clean_repeats = get_distinct_repeats(long_string)
+    repeats = get_repeats()
+    clean_repeats = get_distinct_repeats(repeats, long_string)
 
-    #process_repeats(clean_repeats, long_string, locs, SNP_ENCODING_LENGTH)
+    process_repeats(clean_repeats, long_string, locs, SNP_ENCODING_LENGTH)
