@@ -180,7 +180,6 @@ def get_repeats():
 
 
 if __name__ == "__main__":
-    SNP_LENGTH = 18
     FILENAME =  "yeast10_k1000.fa"
     TERMINATION_LENGTH = 13
     SNP_ENCODING_LENGTH = 11
