@@ -201,3 +201,4 @@ if __name__ == "__main__":
     clean_repeats = get_distinct_repeats(repeats, long_string)
 
     process_repeats(clean_repeats, long_string, locs, SNP_ENCODING_LENGTH)
+
