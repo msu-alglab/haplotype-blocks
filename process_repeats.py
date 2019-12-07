@@ -48,6 +48,7 @@ def process_repeats(repeats, long_string, locs, snp_length):
     for repeat in repeats:
         starts = repeat[0]
         length = repeat[1]
+        print("Length of this repeat is {}".format(length))
         start = starts[0]
         end = start + length
         occ = long_string[start:end]
@@ -75,6 +76,8 @@ def process_repeats(repeats, long_string, locs, snp_length):
         indices = []
         for start in starts:
             end = start + length - 1
+            start_index = occ.find('S')
+            start = start + start_index
             for key in locs:
                 if start >= key[0] and end <= key[1]:
                     name = locs[key]
@@ -95,12 +98,12 @@ def process_repeats(repeats, long_string, locs, snp_length):
             state = occ[0]
             occ = occ[2:]
             if state == "O":
-                state = "0"
+                state_out = "0"
             elif state == "N":
-                state = "1"
+                state_out = "1"
             else:
                 raise ValueError("State was not O or N")
-            snps.append(snp_id + ":" + state)
+            snps.append(snp_id + ":" + state_out)
         print(' '.join(snps))
 
 
