@@ -5,7 +5,7 @@ def get_distinct_repeats(repeats, long_string):
     """Find distinct repeats from repeat file."""
 
     # build a dict by length
-    f = open("repeats.txt", "r")
+    f = open("repeats.k1000.30.txt", "r")
     lines = f.readlines()
     repeat_dict = {}
     for repeat in repeats:
@@ -113,7 +113,7 @@ def process_repeats(repeats, long_string, locs, snp_length):
 
 
 def get_path_locs(TERMINATION_LENGTH):
-    f = open("pathlocs.txt")
+    f = open("pathlocs.k1000.txt")
     lines = f.readlines()
     locs = dict()
     counter = 0
@@ -174,21 +174,42 @@ def get_repeats():
     return repeats
 
 
+def get_params(filename):
+    """Look at .fa file to figure out the length of the snp encoding and the
+    termination character encoding."""
+    f = open(filename)
+    f.readline()
+    lines = f.readlines()
+    long_string = ''.join([x.strip() for x in lines])
+    first_o = long_string.find("O")
+    first_n = long_string.find("N")
+    end_of_first_snp = min(first_o, first_n)
+    # snp goes from 1-end of first snp
+    first_x = long_string.find("X")
+    first_y = long_string.find("Y")
+    start_of_term = min(first_x, first_y)
+    long_string = long_string[start_of_term:]
+    next_s = long_string.find("S")
+    # term goes from 0 to next_s - 1
+    return (end_of_first_snp - 1, next_s)
+
+
 if __name__ == "__main__":
-    FILENAME =  "yeast10_k1000.fa"
+    filename =  "yeast10.k1000.fa"
     TERMINATION_LENGTH = 13
     SNP_ENCODING_LENGTH = 11
 
-    f = open(FILENAME, "r")
+    snp_length, termination_length = get_params(filename)
+
+    f = open(filename, "r")
     # get rid of header line
     f.readline()
     lines = f.readlines()
     lines = [x.strip() for x in lines]
     long_string = ''.join(lines).strip()
 
-    locs = get_path_locs(TERMINATION_LENGTH)
+    locs = get_path_locs(termination_length)
     repeats = get_repeats()
     clean_repeats = get_distinct_repeats(repeats, long_string)
 
-    process_repeats(clean_repeats, long_string, locs, SNP_ENCODING_LENGTH)
-
+    process_repeats(clean_repeats, long_string, locs, snp_length)
