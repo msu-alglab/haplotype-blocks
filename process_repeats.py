@@ -44,7 +44,8 @@ def get_distinct_repeats(repeats_filename, repeats, long_string):
 
     return clean_repeats
 
-def process_repeats(repeats, long_string, locs, snp_length):
+def process_repeats(repeats, long_string, locs, snp_length, k, m):
+    f = open("output.k"+k+"."+m+".txt", "w")
     for repeat in repeats:
         starts = repeat[0]
         length = repeat[1]
@@ -56,6 +57,8 @@ def process_repeats(repeats, long_string, locs, snp_length):
         one_right = long_string[end]
         one_lefts = set(one_left)
         one_rights = set(one_right)
+        print("-----Processing repeats at starts {}".format(starts))
+        print(occ)
         for start in starts[1:]:
             # if there are three or more occurrences, we only need one mismatch on
             # right and left.
@@ -65,6 +68,9 @@ def process_repeats(repeats, long_string, locs, snp_length):
             this_one_right = long_string[end]
             one_lefts.add(this_one_left)
             one_rights.add(this_one_right)
+            print(length)
+            print(start,end)
+            print(this_occ)
             if this_occ != occ:
                 raise ValueError("Occurrences of a repeat are not equal")
         if len(one_lefts) == 1:
@@ -83,16 +89,19 @@ def process_repeats(repeats, long_string, locs, snp_length):
                     name = locs[key]
             indices.append(str(name))
         print(" ".join(indices))
+        f.write(" ".join(indices) + "\n")
 
         # figure out which snps
         start_index = occ.find('S')
         if start_index == -1:
+            f.write("No SNPS\n")
             print("No SNPS")
         else:
             index = start_index + 1
             occ = occ[index:]
             snps = []
             if len(occ) < snp_length + 1:
+                f.write("No SNPS\n")
                 print("No SPS")
             while len(occ) >= snp_length + 1:
                 snp = occ[:snp_length]
@@ -111,6 +120,8 @@ def process_repeats(repeats, long_string, locs, snp_length):
                 snps.append(snp_id + ":" + state_out)
             if len(snps) > 0:
                 print(' '.join(snps))
+                f.write(' '.join(snps) + "\n")
+    f.close()
 
 
 def get_path_locs(TERMINATION_LENGTH, pathlocs_filename):
@@ -142,11 +153,47 @@ def get_repeats(repeats_filename):
     f.readline()
     lines = f.readlines()
     g = nx.Graph()
+    weights = []
     for line in lines:
         start1 = int(line.split()[0])
         start2 = int(line.split()[1])
         length = int(line.split()[2])
         g.add_edge(start1, start2, length=length)
+        weights.append(length)
+    # for weight in weights:
+    repeats = []
+    for weight in set(weights):
+        print("building subgraph for weight {}".format(weight))
+        subgraph = nx.Graph()
+        # build subgraph with ony edges this weight or greater
+        for edge in g.edges(data=True):
+            node1 = edge[0]
+            node2 = edge[1]
+            l = edge[2]["length"]
+            if l >= weight:
+                subgraph.add_edge(node1, node2, length=l)
+        # for conn component in subgraph:
+        connected_components = nx.connected_components(subgraph)
+        for c in connected_components:
+            # if one of the edges in the component == weight
+            add_this_component = False
+            for node1 in c:
+                for node2 in c:
+                    if subgraph.has_edge(node1, node2):
+                        l = subgraph.get_edge_data(node1, node2)["length"]
+                        if l == weight:
+                            add_this_component = True
+            if add_this_component:
+                # add all edges with node1 < node2
+                repeat_list = []
+                for node1 in c:
+                    for node2 in c:
+                        if node1 > node2:
+                            repeat_list.append(node1 - 1)
+                            repeat_list.append(node2 - 1)
+                repeats.append([list(set(repeat_list)), weight])
+    return repeats
+"""
     connected_components = nx.connected_components(g)
     repeats = []
     for c in connected_components:
@@ -157,8 +204,10 @@ def get_repeats(repeats_filename):
                     if g.has_edge(node1, node2):
                         attributes = g.get_edge_data(node1, node2)
                         weights.append(attributes["length"])
+                        print(node1, node2, attributes["length"])
         weights = list(set(weights))
         for weight in weights:
+            repeat_list = []
             hap_block = []
             for node1 in c:
                 for node2 in c:
@@ -172,8 +221,16 @@ def get_repeats(repeats_filename):
             for start1 in hap_block:
                 for start2 in hap_block:
                     if start1 < start2:
-                        repeats.append((start1, start2, weight))
-    return repeats
+                        repeat_list.append(start1 - 1)
+                        repeat_list.append(start2 - 1)
+            print("weight is", weight)
+            print("hap block is", hap_block)
+            print("appending {}".format([list(set(repeat_list)), weight]))
+            if 1750342 in c and weight == 56:
+                print("-----Found component causing trouble.")
+                print(c)
+            repeats.append([list(set(repeat_list)), weight])
+"""
 
 
 def get_params(filename):
@@ -217,6 +274,6 @@ if __name__ == "__main__":
 
     locs = get_path_locs(termination_length, pathlocs_filename)
     repeats = get_repeats(repeats_filename)
-    clean_repeats = get_distinct_repeats(repeats_filename, repeats, long_string)
+    #clean_repeats = get_distinct_repeats(repeats_filename, repeats, long_string)
 
-    process_repeats(clean_repeats, long_string, locs, snp_length)
+    process_repeats(repeats, long_string, locs, snp_length, k, min_length)
