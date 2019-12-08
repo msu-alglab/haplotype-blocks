@@ -145,12 +145,9 @@ def get_repeats():
         start2 = int(line.split()[1])
         length = int(line.split()[2])
         g.add_edge(start1, start2, length=length)
-    print("# connected components:",
-        nx.number_connected_components(g))
     connected_components = nx.connected_components(g)
     repeats = []
     for c in connected_components:
-        print("#### Processing connected component", c)
         weights = []
         for node1 in c:
             for node2 in c:
@@ -170,17 +167,10 @@ def get_repeats():
                                 hap_block.append(node1)
                                 hap_block.append(node2)
             hap_block = list(set(hap_block))
-            print("hap block for weight {}: {}".format(
-                        weight,
-                        hap_block))
             for start1 in hap_block:
                 for start2 in hap_block:
                     if start1 < start2:
                         repeats.append((start1, start2, weight))
-                        print("Adding {}, {}, {}".format(
-                                    start1,
-                                    start2,
-                                    weight))
     return repeats
 
 
