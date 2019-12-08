@@ -125,7 +125,8 @@ def get_path_locs(TERMINATION_LENGTH):
             start = int(line.strip()) - 1
         elif counter == 2:
             end = int(line.strip()) - 1
-            end += TERMINATION_LENGTH
+            # extend end to term length + 1
+            end += TERMINATION_LENGTH + 1
             locs[(start,end)] = index
             index += 1
         counter += 1
@@ -196,8 +197,6 @@ def get_params(filename):
 
 if __name__ == "__main__":
     filename =  "yeast10.k1000.fa"
-    TERMINATION_LENGTH = 13
-    SNP_ENCODING_LENGTH = 11
 
     snp_length, termination_length = get_params(filename)
 
