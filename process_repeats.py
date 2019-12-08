@@ -1,11 +1,12 @@
 import scipy.special
 import networkx as nx
+import sys
 
-def get_distinct_repeats(repeats, long_string):
+def get_distinct_repeats(repeats_filename, repeats, long_string):
     """Find distinct repeats from repeat file."""
 
     # build a dict by length
-    f = open("repeats.k1000.30.txt", "r")
+    f = open(repeats_filename)
     lines = f.readlines()
     repeat_dict = {}
     for repeat in repeats:
@@ -112,8 +113,8 @@ def process_repeats(repeats, long_string, locs, snp_length):
                 print(' '.join(snps))
 
 
-def get_path_locs(TERMINATION_LENGTH):
-    f = open("pathlocs.k1000.txt")
+def get_path_locs(TERMINATION_LENGTH, pathlocs_filename):
+    f = open(pathlocs_filename)
     lines = f.readlines()
     locs = dict()
     counter = 0
@@ -126,7 +127,7 @@ def get_path_locs(TERMINATION_LENGTH):
         elif counter == 2:
             end = int(line.strip()) - 1
             # extend end to term length + 1
-            end += TERMINATION_LENGTH + 1
+            end += TERMINATION_LENGTH
             locs[(start,end)] = index
             index += 1
         counter += 1
@@ -134,9 +135,9 @@ def get_path_locs(TERMINATION_LENGTH):
     return locs
 
 
-def get_repeats():
+def get_repeats(repeats_filename):
     """Use connected components approach to find repeats."""
-    f = open("repeats.txt", "r")
+    f = open(repeats_filename)
     f.readline()
     f.readline()
     lines = f.readlines()
@@ -196,7 +197,14 @@ def get_params(filename):
 
 
 if __name__ == "__main__":
-    filename =  "yeast10.k1000.fa"
+    k = sys.argv[1]
+    min_length = sys.argv[2]
+    assert k in  ["100", "1000"]
+    assert min_length == "30"
+
+    filename = "yeast10.k" + k + ".fa"
+    repeats_filename = "repeats.k" + k + "." + min_length + ".txt"
+    pathlocs_filename = "pathlocs.k" + k + ".txt"
 
     snp_length, termination_length = get_params(filename)
 
@@ -207,8 +215,8 @@ if __name__ == "__main__":
     lines = [x.strip() for x in lines]
     long_string = ''.join(lines).strip()
 
-    locs = get_path_locs(termination_length)
-    repeats = get_repeats()
-    clean_repeats = get_distinct_repeats(repeats, long_string)
+    locs = get_path_locs(termination_length, pathlocs_filename)
+    repeats = get_repeats(repeats_filename)
+    clean_repeats = get_distinct_repeats(repeats_filename, repeats, long_string)
 
     process_repeats(clean_repeats, long_string, locs, snp_length)
