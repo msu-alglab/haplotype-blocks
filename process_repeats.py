@@ -58,7 +58,6 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
         one_lefts = set(one_left)
         one_rights = set(one_right)
         print("-----Processing repeats at starts {}".format(starts))
-        print(occ)
         for start in starts[1:]:
             # if there are three or more occurrences, we only need one mismatch on
             # right and left.
@@ -68,15 +67,14 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
             this_one_right = long_string[end]
             one_lefts.add(this_one_left)
             one_rights.add(this_one_right)
-            print(length)
-            print(start,end)
-            print(this_occ)
             if this_occ != occ:
                 raise ValueError("Occurrences of a repeat are not equal")
-        if len(one_lefts) == 1:
-            raise ValueError("Repeat is not left-maximal")
-        if len(one_rights) == 1:
-            raise ValueError("Repeat is not right-maximal")
+        # since we crop the repeats to include snp characters only, these
+        # repeats need not be left and right maximal.
+        #if len(one_lefts) == 1:
+        #    raise ValueError("Repeat is not left-maximal")
+        #if len(one_rights) == 1:
+        #    raise ValueError("Repeat is not right-maximal")
 
         # figure out which paths
         indices = []
@@ -88,21 +86,18 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
                 if start >= key[0] and end <= key[1]:
                     name = locs[key]
             indices.append(str(name))
-        print(" ".join(indices))
         f.write(" ".join(indices) + "\n")
 
         # figure out which snps
         start_index = occ.find('S')
         if start_index == -1:
             f.write("No SNPS\n")
-            print("No SNPS")
         else:
             index = start_index + 1
             occ = occ[index:]
             snps = []
             if len(occ) < snp_length + 1:
                 f.write("No SNPS\n")
-                print("No SPS")
             while len(occ) >= snp_length + 1:
                 snp = occ[:snp_length]
                 occ = occ[snp_length:]
@@ -119,7 +114,6 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
                     raise ValueError("State was not O or N")
                 snps.append(snp_id + ":" + state_out)
             if len(snps) > 0:
-                print(' '.join(snps))
                 f.write(' '.join(snps) + "\n")
     f.close()
 
@@ -146,8 +140,48 @@ def get_path_locs(TERMINATION_LENGTH, pathlocs_filename):
     return locs
 
 
+def crop(start, length):
+    """Given a start and length, crop it to include only snps."""
+    f = open(filename, "r")
+    # get rid of header line
+    f.readline()
+    lines = f.readlines()
+    lines = [x.strip() for x in lines]
+    long_string = ''.join(lines).strip()
+
+    repeat = long_string[start:start + length]
+    first_s = repeat.find("S")
+    first_x = repeat.find("X")
+    first_y = repeat.find("Y")
+    first_term_char  = min(first_x, first_y)
+    contains_term_chars = first_x + first_y != -2
+    if contains_term_chars and first_s >= first_term_char:
+        # starts with term chars
+        crop_start = first_s
+    else:
+        crop_start = 0
+    repeat = repeat[crop_start:]
+    first_x = repeat.find("X")
+    first_y = repeat.find("Y")
+    contains_term_chars = first_x + first_y != -2
+    first_term_char = min(first_x, first_y)
+    if contains_term_chars:
+        crop_end = len(repeat) - first_term_char
+    else:
+        crop_end = 0
+    return (crop_start, crop_end)
+
+
 def get_repeats(repeats_filename):
     """Use connected components approach to find repeats."""
+    # for debugging, get long string
+    f = open("yeast10.k1000.fa", "r")
+    # get rid of header line
+    f.readline()
+    lines = f.readlines()
+    lines = [x.strip() for x in lines]
+    long_string = ''.join(lines).strip()
+
     f = open(repeats_filename)
     f.readline()
     f.readline()
@@ -155,11 +189,27 @@ def get_repeats(repeats_filename):
     g = nx.Graph()
     weights = []
     for line in lines:
-        start1 = int(line.split()[0])
-        start2 = int(line.split()[1])
+        start1 = int(line.split()[0]) - 1
+        start2 = int(line.split()[1]) - 1
         length = int(line.split()[2])
+        crop_start, crop_end = crop(start1, length)
+        start1 = start1 + crop_start
+        start2 = start2 + crop_start
+        length = length - crop_start - crop_end
         g.add_edge(start1, start2, length=length)
         weights.append(length)
+        if "X" in long_string[start1:start1+length]:
+            print(long_string[start1:start1+length])
+            raise AssertionError("There is an x remaining in trimmed repeat")
+        if "Y" in long_string[start1:start1+length]:
+            print(long_string[start1:start1+length])
+            raise AssertionError("There is a y remaining in trimmed repeat")
+        if "X" in long_string[start2:start2+length]:
+            print(long_string[start2:start2+length])
+            raise AssertionError("There is an x remaining in trimmed repeat")
+        if "Y" in long_string[start2:start2+length]:
+            print(long_string[start2:start2+length])
+            raise AssertionError("There is a y remaining in trimmed repeat")
     # for weight in weights:
     repeats = []
     for weight in set(weights):
@@ -189,48 +239,10 @@ def get_repeats(repeats_filename):
                 for node1 in c:
                     for node2 in c:
                         if node1 > node2:
-                            repeat_list.append(node1 - 1)
-                            repeat_list.append(node2 - 1)
+                            repeat_list.append(node1)
+                            repeat_list.append(node2)
                 repeats.append([list(set(repeat_list)), weight])
     return repeats
-"""
-    connected_components = nx.connected_components(g)
-    repeats = []
-    for c in connected_components:
-        weights = []
-        for node1 in c:
-            for node2 in c:
-                if node1 < node2:
-                    if g.has_edge(node1, node2):
-                        attributes = g.get_edge_data(node1, node2)
-                        weights.append(attributes["length"])
-                        print(node1, node2, attributes["length"])
-        weights = list(set(weights))
-        for weight in weights:
-            repeat_list = []
-            hap_block = []
-            for node1 in c:
-                for node2 in c:
-                    if node1 < node2:
-                        if g.has_edge(node1, node2):
-                            if g.get_edge_data(node1, node2)["length"]\
-                                             >= weight:
-                                hap_block.append(node1)
-                                hap_block.append(node2)
-            hap_block = list(set(hap_block))
-            for start1 in hap_block:
-                for start2 in hap_block:
-                    if start1 < start2:
-                        repeat_list.append(start1 - 1)
-                        repeat_list.append(start2 - 1)
-            print("weight is", weight)
-            print("hap block is", hap_block)
-            print("appending {}".format([list(set(repeat_list)), weight]))
-            if 1750342 in c and weight == 56:
-                print("-----Found component causing trouble.")
-                print(c)
-            repeats.append([list(set(repeat_list)), weight])
-"""
 
 
 def get_params(filename):
