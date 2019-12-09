@@ -206,7 +206,20 @@ def get_repeats(repeats_filename):
         print("start=",start2)
         print("length=",length)
         print("Repeat=", long_string[start1:start1+length])
-        if crop_start > -1 and length > 0:
+        term_chars = False
+        if "X" in long_string[start1:start1+length]:
+            print(long_string[start1:start1+length])
+            term_chars = True
+        if "Y" in long_string[start1:start1+length]:
+            print(long_string[start1:start1+length])
+            term_chars = True
+        if "X" in long_string[start2:start2+length]:
+            print(long_string[start2:start2+length])
+            term_chars = True
+        if "Y" in long_string[start2:start2+length]:
+            print(long_string[start2:start2+length])
+            term_chars = True
+        if crop_start > -1 and length > 0 and term_chars == False:
             g.add_edge(start1, start2, length=length)
             weights.append(length)
             if "X" in long_string[start1:start1+length]:
