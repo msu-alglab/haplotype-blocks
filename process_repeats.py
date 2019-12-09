@@ -188,7 +188,11 @@ def get_repeats(repeats_filename):
     lines = f.readlines()
     g = nx.Graph()
     weights = []
+    print("About to find repeats")
+    counter = 0
     for line in lines:
+        print("Looking at line", counter)
+        counter += 1
         start1 = int(line.split()[0]) - 1
         start2 = int(line.split()[1]) - 1
         length = int(line.split()[2])
@@ -198,6 +202,7 @@ def get_repeats(repeats_filename):
         length = length - crop_start - crop_end
         g.add_edge(start1, start2, length=length)
         weights.append(length)
+        """
         if "X" in long_string[start1:start1+length]:
             print(long_string[start1:start1+length])
             raise AssertionError("There is an x remaining in trimmed repeat")
@@ -210,6 +215,7 @@ def get_repeats(repeats_filename):
         if "Y" in long_string[start2:start2+length]:
             print(long_string[start2:start2+length])
             raise AssertionError("There is a y remaining in trimmed repeat")
+        """
     # for weight in weights:
     repeats = []
     for weight in set(weights):
