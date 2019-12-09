@@ -18,7 +18,7 @@ for line in f.readlines():
 
     counter = counter % 2
 
-plt.scatter(x,y, c="red", alpha=0.1)
+plt.scatter(x,y, c="red", alpha=0.1, label="k=100")
 
 f = open("output.k1000.20.txt")
 x = []
@@ -37,8 +37,10 @@ for line in f.readlines():
         counter += 1
     counter = counter % 2
 
-plt.scatter(x,y, c="blue", alpha=0.3)
+plt.scatter(x,y, c="blue", alpha=0.3, label="k=1000")
 
 plt.xlabel("Number of paths")
 plt.ylabel("Number of SNPs")
+
+plt.legend()
 plt.savefig("scatterplot.png")
