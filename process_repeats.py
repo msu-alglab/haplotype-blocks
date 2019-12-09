@@ -87,6 +87,7 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
                     name = locs[key]
             indices.append(str(name))
         f.write(" ".join(indices) + "\n")
+        print("Paths are:")
         print(" ".join(indices))
 
         # figure out which snps
@@ -153,33 +154,18 @@ def crop(start, length):
     repeat = long_string[start:start + length]
     print("Repeat looking to crop is", repeat)
     first_s = repeat.find("S")
+    crop_start = first_s
     if first_s == -1:
         print("No S!")
-    first_x = repeat.find("X")
-    first_y = repeat.find("Y")
-    first_term_char  = min(first_x, first_y)
-    contains_term_chars = first_x + first_y != -2
-    if contains_term_chars and first_s >= first_term_char:
-        # starts with term chars
-        crop_start = first_s
-    else:
-        crop_start = 0
+    # no matter what, we should crop to the first s.
     repeat = repeat[crop_start:]
     print("After deleting front, repeat is", repeat)
-    first_x = repeat.find("X")
-    first_y = repeat.find("Y")
-    contains_term_chars = first_x + first_y != -2
-    if first_x == -1:
-        first_x = 10000000000
-    if first_y == -1:
-        first_y = 1000000000
-    print("contains term chars", contains_term_chars)
-    first_term_char = min(first_x, first_y)
-    print("First term char", first_term_char)
-    if contains_term_chars:
-        crop_end = len(repeat) - first_term_char
+    first_o = repeat.find("O")
+    first_n = repeat.find("N")
+    if min(first_o, first_n) == 1:
+        crop_end = len(repeat)
     else:
-        crop_end = 0
+        crop_end = len(repeat) - max(first_o, first_n) - 1
     print("crop start, crop end", (crop_start, crop_end))
     return (crop_start, crop_end)
 
@@ -215,22 +201,26 @@ def get_repeats(repeats_filename):
         length = length - crop_start - crop_end
         if length == -1:
             print("Length == -1!")
-        g.add_edge(start1, start2, length=length)
-        weights.append(length)
-        """
-        if "X" in long_string[start1:start1+length]:
-            print(long_string[start1:start1+length])
-            raise AssertionError("There is an x remaining in trimmed repeat")
-        if "Y" in long_string[start1:start1+length]:
-            print(long_string[start1:start1+length])
-            raise AssertionError("There is a y remaining in trimmed repeat")
-        if "X" in long_string[start2:start2+length]:
-            print(long_string[start2:start2+length])
-            raise AssertionError("There is an x remaining in trimmed repeat")
-        if "Y" in long_string[start2:start2+length]:
-            print(long_string[start2:start2+length])
-            raise AssertionError("There is a y remaining in trimmed repeat")
-        """
+        print("After cropping")
+        print("start=",start1)
+        print("start=",start2)
+        print("length=",length)
+        print("Repeat=", long_string[start1:start1+length])
+        if crop_start > -1 and length > 0:
+            g.add_edge(start1, start2, length=length)
+            weights.append(length)
+            if "X" in long_string[start1:start1+length]:
+                print(long_string[start1:start1+length])
+                raise AssertionError("There is an x remaining in trimmed repeat")
+            if "Y" in long_string[start1:start1+length]:
+                print(long_string[start1:start1+length])
+                raise AssertionError("There is a y remaining in trimmed repeat")
+            if "X" in long_string[start2:start2+length]:
+                print(long_string[start2:start2+length])
+                raise AssertionError("There is an x remaining in trimmed repeat")
+            if "Y" in long_string[start2:start2+length]:
+                print(long_string[start2:start2+length])
+                raise AssertionError("There is a y remaining in trimmed repeat")
     # for weight in weights:
     repeats = []
     for weight in set(weights):
