@@ -49,7 +49,7 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
     for repeat in repeats:
         starts = repeat[0]
         length = repeat[1]
-        #print("Length of this repeat is {}".format(length))
+        print("Length of this repeat is {}".format(length))
         start = starts[0]
         end = start + length
         occ = long_string[start:end]
@@ -87,6 +87,7 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
                     name = locs[key]
             indices.append(str(name))
         f.write(" ".join(indices) + "\n")
+        print(" ".join(indices))
 
         # figure out which snps
         start_index = occ.find('S')
@@ -150,7 +151,10 @@ def crop(start, length):
     long_string = ''.join(lines).strip()
 
     repeat = long_string[start:start + length]
+    print("Repeat looking to crop is", repeat)
     first_s = repeat.find("S")
+    if first_s == -1:
+        print("No S!")
     first_x = repeat.find("X")
     first_y = repeat.find("Y")
     first_term_char  = min(first_x, first_y)
@@ -161,14 +165,22 @@ def crop(start, length):
     else:
         crop_start = 0
     repeat = repeat[crop_start:]
+    print("After deleting front, repeat is", repeat)
     first_x = repeat.find("X")
     first_y = repeat.find("Y")
     contains_term_chars = first_x + first_y != -2
+    if first_x == -1:
+        first_x = 10000000000
+    if first_y == -1:
+        first_y = 1000000000
+    print("contains term chars", contains_term_chars)
     first_term_char = min(first_x, first_y)
+    print("First term char", first_term_char)
     if contains_term_chars:
         crop_end = len(repeat) - first_term_char
     else:
         crop_end = 0
+    print("crop start, crop end", (crop_start, crop_end))
     return (crop_start, crop_end)
 
 
@@ -196,10 +208,13 @@ def get_repeats(repeats_filename):
         start1 = int(line.split()[0]) - 1
         start2 = int(line.split()[1]) - 1
         length = int(line.split()[2])
+        print("Looking for crops for start", start1)
         crop_start, crop_end = crop(start1, length)
         start1 = start1 + crop_start
         start2 = start2 + crop_start
         length = length - crop_start - crop_end
+        if length == -1:
+            print("Length == -1!")
         g.add_edge(start1, start2, length=length)
         weights.append(length)
         """
