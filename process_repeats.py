@@ -160,13 +160,22 @@ def crop(start, length):
     # no matter what, we should crop to the first s.
     repeat = repeat[crop_start:]
     print("After deleting front, repeat is", repeat)
+    # find last o or n
     first_o = repeat.find("O")
     first_n = repeat.find("N")
-    if min(first_o, first_n) == 1:
+    if first_o + first_n == -2:
         crop_end = len(repeat)
+        print("No O or N")
     else:
-        crop_end = len(repeat) - max(first_o, first_n) - 1
+        last_o_or_n = max([i for (i, val) in enumerate(repeat) if val in ("N", "O")])
+        print("Last o or n is at", last_o_or_n)
+        crop_end = len(repeat) - last_o_or_n - 1
     print("crop start, crop end", (crop_start, crop_end))
+    print("Going back to long string, repeat should be")
+    print(long_string[start + crop_start:start + length -\
+    crop_end])
+    print("Start should be {}".format(start + crop_start))
+    print("Length should be {}".format(length - crop_start - crop_end))
     return (crop_start, crop_end)
 
 
@@ -206,20 +215,7 @@ def get_repeats(repeats_filename):
         print("start=",start2)
         print("length=",length)
         print("Repeat=", long_string[start1:start1+length])
-        term_chars = False
-        if "X" in long_string[start1:start1+length]:
-            print(long_string[start1:start1+length])
-            term_chars = True
-        if "Y" in long_string[start1:start1+length]:
-            print(long_string[start1:start1+length])
-            term_chars = True
-        if "X" in long_string[start2:start2+length]:
-            print(long_string[start2:start2+length])
-            term_chars = True
-        if "Y" in long_string[start2:start2+length]:
-            print(long_string[start2:start2+length])
-            term_chars = True
-        if crop_start > -1 and length > 0 and term_chars == False:
+        if crop_start > -1 and length > 0:
             g.add_edge(start1, start2, length=length)
             weights.append(length)
             if "X" in long_string[start1:start1+length]:
