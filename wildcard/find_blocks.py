@@ -70,11 +70,19 @@ def DFS(i, rows):
     for b in [0, 1]:
         pathsets.append(sets[i][b])
         pathOK = True
+        print("Checking the {} branch".format(b))
+        print("Pathsets is currently", pathsets)
         for s in pathsets:
             if not bool(rows.intersection(s)):
                 pathOK = False
                 break
         rows_b = rows.intersection(sets[i][b].union(sets[i]["*"]))
+        print("Rows supporting this branch: {}".format(rows_b))
+        for s in pathsets:
+            if not bool(rows_b.intersection(s)):
+                pathOK = False
+                break
+        print("Is this path okay?", pathOK)
         right0 = rows_b.intersection(sets[col + 1][0])
         right1 = rows_b.intersection(sets[col + 1][1])
         if pathOK and bool(right0) and bool(right1) and len(rows_b) > 1:
@@ -87,9 +95,26 @@ def DFS(i, rows):
     return branch_count
 
 
+def read_data(filename):
+    """Read in binary matrix file."""
+    f = open(filename)
+    seqs = []
+    n = 100
+    for line in f.readlines()[:50]:
+        seq = []
+        for character in line[:n]:
+            seq.append(int(character))
+        seqs.append(seq)
+    return seqs
+
+
 if __name__ == "__main__":
-    blocks = [[1, 0, 1, 0],
-              ['*', 1, 0, 1],
-              [0, '*', 1, 1]]
+    """
+    blocks = [[1, 0, '*'],
+              [1, 0, '*'],
+              [0, 0, 1],
+              [0, 0, '*']]
+    """
+    blocks = read_data("/Users/lucywilliams/vcfs/output.txt")
 
     find_blocks(blocks)
