@@ -22,18 +22,18 @@ def find_blocks(seqs):
     global k
     global sets
     pathsets = []
-    print("pathsets=", pathsets)
     col = 1
     n = len(seqs[0])
     k = len(seqs)
 
-    print("n=", n)
-    print("k=", k)
+    print("Input n={}, k={}".format(n, k))
+    print()
     sets = get_sets(seqs, n, k)
-    print(sets)
 
     for col in range(n):
-        DFS(col, list(range(k)))
+        print("Finding blocks at index {}".format(col + 1))
+        DFS(col, set(range(k)))
+        print()
 
 
 def get_sets(seqs, n, k):
@@ -52,26 +52,44 @@ def get_sets(seqs, n, k):
             else:
                 setw.append(row)
         this_col_sets = dict()
-        this_col_sets[0] = set0
-        this_col_sets[1] = set1
-        this_col_sets['*'] = setw
+        this_col_sets[0] = set(set0)
+        this_col_sets[1] = set(set1)
+        this_col_sets['*'] = set(setw)
         sets[col] = this_col_sets
+    sets[n] = dict()
+    for b in [0, 1]:
+        sets[n][b] = list(range(k))
 
     return sets
 
 
-def DFS(column, rows):
+def DFS(i, rows):
     """Explore one layer deeper in the binary trie for MPWHBs at a certain
-    column."""
+    i."""
     branch_count = 0
     for b in [0, 1]:
-        pathsets.append(sets[column][b])
-        print("pathsets=", pathsets)
+        pathsets.append(sets[i][b])
+        pathOK = True
+        for s in pathsets:
+            if not bool(rows.intersection(s)):
+                pathOK = False
+                break
+        rows_b = rows.intersection(sets[i][b].union(sets[i]["*"]))
+        right0 = rows_b.intersection(sets[col + 1][0])
+        right1 = rows_b.intersection(sets[col + 1][1])
+        if pathOK and bool(right0) and bool(right1) and len(rows_b) > 1:
+            branch_count += 1
+            if i == 0 or DFS(i - 1, rows_b) != 1:
+                rows_to_print = [x + 1 for x in rows_b]
+                print("Found block: K={}, i={}, j={}".format(
+                    rows_to_print, i + 1, col + 1))
+        pathsets.pop()
+    return branch_count
 
 
 if __name__ == "__main__":
     blocks = [[1, 0, 1, 0],
-              ['*', 1, 1, 1],
+              ['*', 1, 0, 1],
               [0, '*', 1, 1]]
 
     find_blocks(blocks)
