@@ -108,3 +108,6 @@ venv.bak/
 
 # example files
 example.fa
+
+# block output files
+block*.txt
