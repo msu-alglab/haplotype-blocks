@@ -20,22 +20,29 @@ def find_blocks(seqs):
     # note: psuedocude is written with indices starting at 0. here, we will
     # start indices at 0, since that's how Python does it. But will add 1 when
     # we return the indices.
+
     # global variables
-    global pathsets
     global col
     global n
     global k
     global sets
-    pathsets = []
-    col = 1
+    global nonwc
     n = len(seqs[0])
     k = len(seqs)
 
+    global s
+    s = seqs
+
     sets = get_sets(seqs, n, k)
 
-    for col in range(n):
+    # for col in range(n):
+    for col in [2]:
+        nonwc = [0]*n
+        """
         if col % 1000 == 1:
             print("Finding blocks at index {}".format(col + 1))
+        """
+        print("Finding blocks at index {}".format(col + 1))
         DFS(col, set(range(k)))
 
 
@@ -69,32 +76,69 @@ def get_sets(seqs, n, k):
 def DFS(i, rows):
     """Explore one layer deeper in the binary trie for MPWHBs at a certain
     i."""
+    print("Call to DFS with i={} and rows={}".format(i, rows))
     branch_count = 0
     for b in [0, 1]:
-        pathsets.append(sets[i][b])
-        pathOK = True
-        # print("Checking the {} branch".format(b))
-        # print("Pathsets is currently", pathsets)
-        for s in pathsets:
-            if not bool(rows.intersection(s)):
-                pathOK = False
-                break
-        rows_b = rows.intersection(sets[i][b].union(sets[i]["*"]))
-        # print("Rows supporting this branch: {}".format(rows_b))
-        for s in pathsets:
-            if not bool(rows_b.intersection(s)):
-                pathOK = False
-                break
-        # print("Is this path okay?", pathOK)
-        right0 = rows_b.intersection(sets[col + 1][0])
-        right1 = rows_b.intersection(sets[col + 1][1])
-        if pathOK and bool(right0) and bool(right1) and len(rows_b) > 1:
+        print("Explore b={} branch".format(b))
+        rm_rows = rows.intersection(sets[i][abs(1 - b)])
+        retain_rows = rows.difference(rm_rows)
+
+        print("Rows to remove: {}".format(rm_rows))
+        print("Rows to retain: {}".format(retain_rows))
+
+        # update position i of nonwc
+        for r in retain_rows:
+            if s[r][i] == b:
+                nonwc[i] += 1
+        print("nonwc is {}".format(nonwc))
+        pathOK = nonwc[i] > 0
+
+        print("Processing nonwc for rm rows")
+        # for each row that was removed, for each column other than the current
+        # column, subtract 1 if the row at that column was a non-wildcard
+        # character
+        for r in rm_rows:
+            print("r={}".format(r))
+            for c in range(i + 1, col + 1):
+                print("c={}".format(c))
+                print("s[{}][{}]={}".format(r, c, s[r][c]))
+                if s[r][c] != '*':
+                    nonwc[c] -= 1
+                    if nonwc[c] <= 0:
+                        pathOK = False
+        print("nowc is {}".format(nonwc))
+
+        print("Is this path okay?", pathOK)
+        right0 = retain_rows.intersection(sets[col + 1][0])
+        right1 = retain_rows.intersection(sets[col + 1][1])
+        print("Right-maximal: {}. Left-maximal: {}".format(right0, right1))
+        if pathOK and bool(right0) and bool(right1):
+            # BUG: we are over-counting
             branch_count += 1
-            if i == 0 or DFS(i - 1, rows_b) != 1:
-                rows_to_print = [x + 1 for x in rows_b]
-                g.write("K={}, i={}, j={}\n".format(
-                    rows_to_print, i + 1, col + 1))
-        pathsets.pop()
+            if len(retain_rows) > 1:
+                if i == 0 or DFS(i - 1, retain_rows) == 1:
+                    rows_to_print = [x + 1 for x in retain_rows]
+                    print("Found block K={}, i={}, j={}".format(
+                        rows_to_print, i + 1, col + 1))
+                    """
+                    g.write("K={}, i={}, j={}\n".format(
+                        rows_to_print, i + 1, col + 1))
+                    """
+            else:
+                print("Stopped pursuing because |remain_rows| == 1")
+
+        for r in retain_rows:
+            if s[r][i] == b:
+                nonwc[i] -= 1
+
+        for r in rm_rows:
+            for c in range(i + 1, col + 1):
+                if s[r][c] != '*':
+                    nonwc[c] += 1
+        print("going back up the tree. nonwc has been returned to {}".format(
+            nonwc))
+
+    print("Call to DFS with i={} and rows={} OVER".format(i, rows))
     return branch_count
 
 
@@ -115,11 +159,12 @@ def create_data(filename, k, n, wc_prop):
 
 
 if __name__ == "__main__":
-    """
-    blocks = [[1, 0, '*'],
-              [1, 0, '*'],
-              [0, 0, 1],
-              [0, 0, '*']]
+    blocks = [[1, 0, "*"],
+              [1, 0, "*"],
+              [0, 0, 0],
+              [0, 0, 1]]
+    find_blocks(blocks)
+
     """
     random.seed(1)
     global g
@@ -135,3 +180,4 @@ if __name__ == "__main__":
         )
         find_blocks(blocks)
         g.close()
+    """
