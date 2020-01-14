@@ -181,10 +181,10 @@ def crop(start, length):
     return (crop_start, crop_end)
 
 
-def get_repeats(repeats_filename):
+def get_repeats(repeats_filename, filename):
     """Use connected components approach to find repeats."""
     # for debugging, get long string
-    f = open("yeast10.k25.fa", "r")
+    f = open(filename, "r")
     # get rid of header line
     f.readline()
     lines = f.readlines()
@@ -314,7 +314,7 @@ if __name__ == "__main__":
     long_string = ''.join(lines).strip()
 
     locs = get_path_locs(termination_length, pathlocs_filename)
-    repeats = get_repeats(repeats_filename)
+    repeats = get_repeats(repeats_filename, filename)
 
     process_repeats(repeats, long_string, locs, snp_length, k, min_length)
     print("--- %s seconds ---" % (time.time() - start_time))
