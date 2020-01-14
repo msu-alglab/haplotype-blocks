@@ -1,18 +1,17 @@
-import scipy.special
 import time
 import networkx as nx
 import sys
+
 
 def get_distinct_repeats(repeats_filename, repeats, long_string):
     """Find distinct repeats from repeat file."""
 
     # build a dict by length
     f = open(repeats_filename)
-    lines = f.readlines()
     repeat_dict = {}
     for repeat in repeats:
         start1, start2, length = repeat
-        if not length in repeat_dict:
+        if length not in repeat_dict:
             repeat_dict[length] = []
         repeat_dict[length].append(start1)
         repeat_dict[length].append(start2)
@@ -29,8 +28,8 @@ def get_distinct_repeats(repeats_filename, repeats, long_string):
             values = [values[0]-1, values[1]-1]
             clean_repeats.append([values, length])
         else:
-            #print("Length {} has {} elements".format(length, num_values))
-            #print(values)
+            # print("Length {} has {} elements".format(length, num_values))
+            # print(values)
             occs = {}
             for s in values:
                 start = s - 1
@@ -44,6 +43,7 @@ def get_distinct_repeats(repeats_filename, repeats, long_string):
                 clean_repeats.append([list(set(starts)), length])
 
     return clean_repeats
+
 
 def process_repeats(repeats, long_string, locs, snp_length, k, m):
     f = open("output.k"+k+"."+m+".txt", "w")
@@ -60,8 +60,8 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
         one_rights = set(one_right)
         print("-----Processing repeats at starts {}".format(starts))
         for start in starts[1:]:
-            # if there are three or more occurrences, we only need one mismatch on
-            # right and left.
+            # if there are three or more occurrences, we only need one mismatch
+            # on right and left.
             end = start + length
             this_occ = long_string[start:end]
             this_one_left = long_string[start - 1]
@@ -72,9 +72,9 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
                 raise ValueError("Occurrences of a repeat are not equal")
         # since we crop the repeats to include snp characters only, these
         # repeats need not be left and right maximal.
-        #if len(one_lefts) == 1:
+        # if len(one_lefts) == 1:
         #    raise ValueError("Repeat is not left-maximal")
-        #if len(one_rights) == 1:
+        # if len(one_rights) == 1:
         #    raise ValueError("Repeat is not right-maximal")
 
         # figure out which paths
@@ -129,14 +129,15 @@ def get_path_locs(TERMINATION_LENGTH, pathlocs_filename):
     index = 0
     for line in lines:
         if counter == 0:
-            name = line.strip()
+            # name = line.strip()
+            pass
         elif counter == 1:
             start = int(line.strip()) - 1
         elif counter == 2:
             end = int(line.strip()) - 1
             # extend end to term length + 1
             end += TERMINATION_LENGTH
-            locs[(start,end)] = index
+            locs[(start, end)] = index
             index += 1
         counter += 1
         counter = counter % 3
@@ -168,13 +169,13 @@ def crop(start, length):
         crop_end = len(repeat)
         print("No O or N")
     else:
-        last_o_or_n = max([i for (i, val) in enumerate(repeat) if val in ("N", "O")])
+        last_o_or_n = max([i for (i, val) in enumerate(repeat) if
+                           val in ("N", "O")])
         print("Last o or n is at", last_o_or_n)
         crop_end = len(repeat) - last_o_or_n - 1
     print("crop start, crop end", (crop_start, crop_end))
     print("Going back to long string, repeat should be")
-    print(long_string[start + crop_start:start + length -\
-    crop_end])
+    print(long_string[start + crop_start:start + length - crop_end])
     print("Start should be {}".format(start + crop_start))
     print("Length should be {}".format(length - crop_start - crop_end))
     return (crop_start, crop_end)
@@ -212,25 +213,29 @@ def get_repeats(repeats_filename):
         if length == -1:
             print("Length == -1!")
         print("After cropping")
-        print("start=",start1)
-        print("start=",start2)
-        print("length=",length)
+        print("start=", start1)
+        print("start=", start2)
+        print("length=", length)
         print("Repeat=", long_string[start1:start1+length])
         if crop_start > -1 and length > 0:
             g.add_edge(start1, start2, length=length)
             weights.append(length)
             if "X" in long_string[start1:start1+length]:
                 print(long_string[start1:start1+length])
-                raise AssertionError("There is an x remaining in trimmed repeat")
+                raise AssertionError(
+                    "There is an x remaining in trimmed repeat")
             if "Y" in long_string[start1:start1+length]:
                 print(long_string[start1:start1+length])
-                raise AssertionError("There is a y remaining in trimmed repeat")
+                raise AssertionError(
+                    "There is a y remaining in trimmed repeat")
             if "X" in long_string[start2:start2+length]:
                 print(long_string[start2:start2+length])
-                raise AssertionError("There is an x remaining in trimmed repeat")
+                raise AssertionError(
+                    "There is an x remaining in trimmed repeat")
             if "Y" in long_string[start2:start2+length]:
                 print(long_string[start2:start2+length])
-                raise AssertionError("There is a y remaining in trimmed repeat")
+                raise AssertionError(
+                    "There is a y remaining in trimmed repeat")
     # for weight in weights:
     repeats = []
     for weight in set(weights):
@@ -240,9 +245,9 @@ def get_repeats(repeats_filename):
         for edge in g.edges(data=True):
             node1 = edge[0]
             node2 = edge[1]
-            l = edge[2]["length"]
-            if l >= weight:
-                subgraph.add_edge(node1, node2, length=l)
+            length = edge[2]["length"]
+            if length >= weight:
+                subgraph.add_edge(node1, node2, length=length)
         # for conn component in subgraph:
         connected_components = nx.connected_components(subgraph)
         for c in connected_components:
@@ -251,8 +256,8 @@ def get_repeats(repeats_filename):
             for node1 in c:
                 for node2 in c:
                     if subgraph.has_edge(node1, node2):
-                        l = subgraph.get_edge_data(node1, node2)["length"]
-                        if l == weight:
+                        length = subgraph.get_edge_data(node1, node2)["length"]
+                        if length == weight:
                             add_this_component = True
             if add_this_component:
                 # add all edges with node1 < node2
@@ -290,7 +295,7 @@ if __name__ == "__main__":
     start_time = time.time()
     k = sys.argv[1]
     min_length = sys.argv[2]
-    assert k in  ["100", "1000"]
+    assert k in ["25", "100", "1000"]
 
     filename = "yeast10.k" + k + ".fa"
     repeats_filename = "repeats.k" + k + "." + min_length + ".txt"
@@ -307,7 +312,8 @@ if __name__ == "__main__":
 
     locs = get_path_locs(termination_length, pathlocs_filename)
     repeats = get_repeats(repeats_filename)
-    #clean_repeats = get_distinct_repeats(repeats_filename, repeats, long_string)
+    # clean_repeats = get_distinct_repeats(
+    #     repeats_filename, repeats, long_string)
 
     process_repeats(repeats, long_string, locs, snp_length, k, min_length)
     print("--- %s seconds ---" % (time.time() - start_time))
