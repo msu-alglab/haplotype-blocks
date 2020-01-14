@@ -1,4 +1,5 @@
 import scipy.special
+import time
 import networkx as nx
 import sys
 
@@ -286,10 +287,10 @@ def get_params(filename):
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     k = sys.argv[1]
     min_length = sys.argv[2]
     assert k in  ["100", "1000"]
-    assert min_length == "30"
 
     filename = "yeast10.k" + k + ".fa"
     repeats_filename = "repeats.k" + k + "." + min_length + ".txt"
@@ -309,3 +310,4 @@ if __name__ == "__main__":
     #clean_repeats = get_distinct_repeats(repeats_filename, repeats, long_string)
 
     process_repeats(repeats, long_string, locs, snp_length, k, min_length)
+    print("--- %s seconds ---" % (time.time() - start_time))
