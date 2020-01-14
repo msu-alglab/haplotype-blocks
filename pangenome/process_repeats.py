@@ -184,7 +184,7 @@ def crop(start, length):
 def get_repeats(repeats_filename):
     """Use connected components approach to find repeats."""
     # for debugging, get long string
-    f = open("yeast10.k1000.fa", "r")
+    f = open("yeast10.k25.fa", "r")
     # get rid of header line
     f.readline()
     lines = f.readlines()
@@ -292,15 +292,18 @@ def get_params(filename):
 
 
 if __name__ == "__main__":
+    # start timer
     start_time = time.time()
+    # read in k and min repeat length, which will help us build the filenames
     k = sys.argv[1]
     min_length = sys.argv[2]
-    assert k in ["25", "100", "1000"]
 
     filename = "yeast10.k" + k + ".fa"
     repeats_filename = "repeats.k" + k + "." + min_length + ".txt"
     pathlocs_filename = "pathlocs.k" + k + ".txt"
 
+    # look at file and figure out how long the snp encoding and termination
+    # character encodings are.
     snp_length, termination_length = get_params(filename)
 
     f = open(filename, "r")
@@ -312,8 +315,6 @@ if __name__ == "__main__":
 
     locs = get_path_locs(termination_length, pathlocs_filename)
     repeats = get_repeats(repeats_filename)
-    # clean_repeats = get_distinct_repeats(
-    #     repeats_filename, repeats, long_string)
 
     process_repeats(repeats, long_string, locs, snp_length, k, min_length)
     print("--- %s seconds ---" % (time.time() - start_time))
