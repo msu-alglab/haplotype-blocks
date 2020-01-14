@@ -111,3 +111,6 @@ example.fa
 
 # block output files
 block*.txt
+
+# wild hap out and test
+wildcard/*.txt
