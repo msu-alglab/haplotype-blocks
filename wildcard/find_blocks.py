@@ -43,7 +43,8 @@ def find_blocks(seqs, outputfile):
     for col in range(n):
         cons_cnt = [0]*n
         if col % 1000 == 1:
-            print("Finding blocks at index {}".format(col + 1))
+            # print("Finding blocks at index {}".format(col + 1))
+            pass
         DFS(col, set(range(k)))
 
     g.close()
@@ -88,7 +89,7 @@ def DFS(i, rows):
         rm = rows.intersection(sets[i][abs(1-b)])
 
         # print("Rows to remove: {}".format(rm))
-        # print("Rows to retain: {}".format(kp))
+        # print("Rows to keep: {}".format(kp))
 
         # update position i of nonwc
         for r in kp:
@@ -117,13 +118,14 @@ def DFS(i, rows):
         right1 = bool(kp.intersection(sets[col + 1][1]))
         rightwc = kp.issubset(sets[col + 1]['*'])
         # print("Right0={}, right1={}, rightallwc={}".format(
-        #    right0,
-        #    right1,
-        #    rightwc))
+        #   right0,
+        #   right1,
+        #   rightwc))
         r_max = col == n or right0 and right1 or rightwc
-        if consOK and r_max:
+        if len(rm) > 0:
             branch_count += 1
             # print("Branch count increment, so bc={}".format(branch_count))
+        if consOK and r_max:
             if len(kp) > 1:
                 if i == 0 or DFS(i - 1, kp) != 1:
                     rows_to_print = [x + 1 for x in kp]
@@ -144,7 +146,7 @@ def DFS(i, rows):
                 if s[r][c] != '*':
                     cons_cnt[c] += 1
         # print("going back up the tree. nonwc has been returned to {}".format(
-        #     cons_cnt))
+        #    cons_cnt))
 
     # print("Call to DFS with i={} and rows={} OVER".format(i, rows))
     return branch_count
@@ -168,6 +170,13 @@ def create_data(filename, k, n, wc_prop):
 
 if __name__ == "__main__":
 
+    seqs = [[1, 0, "*"],
+            [1, 0, "*"],
+            [0, 0, 0],
+            [0, 0, 1]]
+
+    find_blocks(seqs, "test.out")
+"""
     random.seed(1)
 
     for wc_prop in [0.05]:
@@ -179,3 +188,4 @@ if __name__ == "__main__":
             wc_prop
         )
         find_blocks(blocks, output_name)
+"""

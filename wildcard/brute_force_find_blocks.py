@@ -1,4 +1,5 @@
 import itertools
+import random
 
 
 def bf_find_blocks(seqs):
@@ -10,9 +11,7 @@ def bf_find_blocks(seqs):
     blocks = []
 
     for j in range(len(s[0])):
-        print("Processing j={}".format(j))
         for length in range(j + 1, 0, -1):
-            print("length={}".format(length))
             for prod in itertools.product("01", repeat=length):
                 prod = [int(x) for x in prod]
                 block = get_block(prod, length, j)
@@ -25,9 +24,8 @@ def bf_find_blocks(seqs):
                         i_str,
                         j_str)
                     blocks.append(block_string)
-        print()
 
-    print(blocks)
+    return(blocks)
 
 
 def get_block(prod, length, j):
@@ -87,6 +85,19 @@ if __name__ == "__main__":
             [0, 0, 0],
             [0, 0, 1]]
 
+    seqs = []
+    for i in range(3):
+        seq = []
+        for j in range(5):
+            val = random.random()
+            if val < 0.3:
+                seq.append(1)
+            elif val < 0.8:
+                seq.append(0)
+            else:
+                seq.append("*")
+        seqs.append(seq)
+
     print("Seqs is {}".format(seqs))
 
-    bf_find_blocks(seqs)
+    print(bf_find_blocks(seqs))
