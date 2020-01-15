@@ -1,0 +1,441 @@
+>AWRI796_gi|323334821|gb|ADVS01000001.1| Saccharomyces cerevisiae AWRI796 chromosome I AWRI796_c1_1; whole genome shotgun sequence
+1
+1235
+>AWRI796_gi|323334759|gb|ADVS01000002.1| Saccharomyces cerevisiae AWRI796 chromosome I AWRI796_c1_2; whole genome shotgun sequence
+1244
+18951
+>AWRI796_gi|323334699|gb|ADVS01000003.1| Saccharomyces cerevisiae AWRI796 chromosome II AWRI796_c2_3; whole genome shotgun sequence
+18960
+34235
+>AWRI796_gi|323334494|gb|ADVS01000004.1| Saccharomyces cerevisiae AWRI796 chromosome II AWRI796_c2_4; whole genome shotgun sequence
+34244
+96278
+>AWRI796_gi|323334446|gb|ADVS01000005.1| Saccharomyces cerevisiae AWRI796 chromosome III AWRI796_c3_5; whole genome shotgun sequence
+96287
+110346
+>AWRI796_gi|323334434|gb|ADVS01000006.1| Saccharomyces cerevisiae AWRI796 chromosome III AWRI796_c3_6; whole genome shotgun sequence
+110355
+116491
+>AWRI796_gi|323334401|gb|ADVS01000007.1| Saccharomyces cerevisiae AWRI796 chromosome III AWRI796_c3_7; whole genome shotgun sequence
+116500
+123852
+>AWRI796_gi|323334396|gb|ADVS01000008.1| Saccharomyces cerevisiae AWRI796 chromosome III AWRI796_c3_8; whole genome shotgun sequence
+123861
+126862
+>AWRI796_gi|323334391|gb|ADVS01000009.1| Saccharomyces cerevisiae AWRI796 chromosome III AWRI796_c3_9; whole genome shotgun sequence
+126871
+127953
+>AWRI796_gi|323334368|gb|ADVS01000010.1| Saccharomyces cerevisiae AWRI796 chromosome IV AWRI796_c4_10; whole genome shotgun sequence
+127962
+136093
+>AWRI796_gi|323334277|gb|ADVS01000011.1| Saccharomyces cerevisiae AWRI796 chromosome IV AWRI796_c4_11; whole genome shotgun sequence
+136102
+166406
+>AWRI796_gi|323334233|gb|ADVS01000012.1| Saccharomyces cerevisiae AWRI796 chromosome IV AWRI796_c4_12; whole genome shotgun sequence
+166415
+181310
+>AWRI796_gi|323334171|gb|ADVS01000013.1| Saccharomyces cerevisiae AWRI796 chromosome IV AWRI796_c4_13; whole genome shotgun sequence
+181319
+204365
+>AWRI796_gi|323334058|gb|ADVS01000014.1| Saccharomyces cerevisiae AWRI796 chromosome IV AWRI796_c4_14; whole genome shotgun sequence
+204374
+244368
+>AWRI796_gi|323334006|gb|ADVS01000015.1| Saccharomyces cerevisiae AWRI796 chromosome IV AWRI796_c4_15; whole genome shotgun sequence
+244377
+259823
+>AWRI796_gi|323333954|gb|ADVS01000016.1| Saccharomyces cerevisiae AWRI796 chromosome IV AWRI796_c4_16; whole genome shotgun sequence
+259832
+279287
+>AWRI796_gi|323333935|gb|ADVS01000017.1| Saccharomyces cerevisiae AWRI796 chromosome IV AWRI796_c4_17; whole genome shotgun sequence
+279296
+286933
+>AWRI796_gi|323333931|gb|ADVS01000018.1| Saccharomyces cerevisiae AWRI796 chromosome V AWRI796_c5_18; whole genome shotgun sequence
+286942
+288214
+>AWRI796_gi|323333857|gb|ADVS01000019.1| Saccharomyces cerevisiae AWRI796 chromosome V AWRI796_c5_19; whole genome shotgun sequence
+288223
+312922
+>AWRI796_gi|323333836|gb|ADVS01000020.1| Saccharomyces cerevisiae AWRI796 chromosome V AWRI796_c5_20; whole genome shotgun sequence
+312931
+318478
+>AWRI796_gi|323333761|gb|ADVS01000021.1| Saccharomyces cerevisiae AWRI796 chromosome V AWRI796_c5_21; whole genome shotgun sequence
+318487
+343965
+>AWRI796_gi|323333692|gb|ADVS01000022.1| Saccharomyces cerevisiae AWRI796 chromosome VI AWRI796_c6_22; whole genome shotgun sequence
+343974
+370535
+>AWRI796_gi|323333576|gb|ADVS01000023.1| Saccharomyces cerevisiae AWRI796 chromosome VII AWRI796_c7_23; whole genome shotgun sequence
+370544
+413141
+>AWRI796_gi|323333431|gb|ADVS01000024.1| Saccharomyces cerevisiae AWRI796 chromosome VII AWRI796_c7_24; whole genome shotgun sequence
+413150
+456773
+>AWRI796_gi|323333428|gb|ADVS01000025.1| Saccharomyces cerevisiae AWRI796 chromosome VII AWRI796_c7_25; whole genome shotgun sequence
+456782
+459232
+>AWRI796_gi|323333362|gb|ADVS01000026.1| Saccharomyces cerevisiae AWRI796 chromosome VII AWRI796_c7_26; whole genome shotgun sequence
+459241
+479095
+>AWRI796_gi|323333287|gb|ADVS01000027.1| Saccharomyces cerevisiae AWRI796 chromosome VIII AWRI796_c8_27; whole genome shotgun sequence
+479104
+501713
+>AWRI796_gi|323333227|gb|ADVS01000028.1| Saccharomyces cerevisiae AWRI796 chromosome VIII AWRI796_c8_28; whole genome shotgun sequence
+501722
+520683
+>AWRI796_gi|323333183|gb|ADVS01000029.1| Saccharomyces cerevisiae AWRI796 chromosome VIII AWRI796_c8_29; whole genome shotgun sequence
+520692
+537449
+>AWRI796_gi|323333102|gb|ADVS01000030.1| Saccharomyces cerevisiae AWRI796 chromosome IX AWRI796_c9_30; whole genome shotgun sequence
+537458
+565501
+>AWRI796_gi|323333053|gb|ADVS01000031.1| Saccharomyces cerevisiae AWRI796 chromosome IX AWRI796_c9_31; whole genome shotgun sequence
+565510
+577973
+>AWRI796_gi|323332921|gb|ADVS01000032.1| Saccharomyces cerevisiae AWRI796 chromosome X AWRI796_c10_32; whole genome shotgun sequence
+577982
+622118
+>AWRI796_gi|323332837|gb|ADVS01000033.1| Saccharomyces cerevisiae AWRI796 chromosome X AWRI796_c10_33; whole genome shotgun sequence
+622127
+651595
+>AWRI796_gi|323332827|gb|ADVS01000034.1| Saccharomyces cerevisiae AWRI796 chromosome X AWRI796_c10_34; whole genome shotgun sequence
+651604
+654795
+>AWRI796_gi|323332671|gb|ADVS01000035.1| Saccharomyces cerevisiae AWRI796 chromosome XI AWRI796_c11_35; whole genome shotgun sequence
+654804
+701505
+>AWRI796_gi|323332608|gb|ADVS01000036.1| Saccharomyces cerevisiae AWRI796 chromosome XI AWRI796_c11_36; whole genome shotgun sequence
+701514
+724579
+>AWRI796_gi|323332575|gb|ADVS01000037.1| Saccharomyces cerevisiae AWRI796 chromosome XII AWRI796_c12_37; whole genome shotgun sequence
+724588
+735987
+>AWRI796_gi|323332461|gb|ADVS01000038.1| Saccharomyces cerevisiae AWRI796 chromosome XII AWRI796_c12_38; whole genome shotgun sequence
+735996
+767820
+>AWRI796_gi|323332306|gb|ADVS01000039.1| Saccharomyces cerevisiae AWRI796 chromosome XII AWRI796_c12_39; whole genome shotgun sequence
+767829
+826196
+>AWRI796_gi|323332217|gb|ADVS01000040.1| Saccharomyces cerevisiae AWRI796 chromosome XIII AWRI796_c13_40; whole genome shotgun sequence
+826205
+852747
+>AWRI796_gi|323332000|gb|ADVS01000041.1| Saccharomyces cerevisiae AWRI796 chromosome XIII AWRI796_c13_41; whole genome shotgun sequence
+852756
+915284
+>AWRI796_gi|323331814|gb|ADVS01000042.1| Saccharomyces cerevisiae AWRI796 chromosome XIV AWRI796_c14_42; whole genome shotgun sequence
+915293
+974743
+>AWRI796_gi|323331748|gb|ADVS01000043.1| Saccharomyces cerevisiae AWRI796 chromosome XIV AWRI796_c14_43; whole genome shotgun sequence
+974752
+996734
+>AWRI796_gi|323331602|gb|ADVS01000044.1| Saccharomyces cerevisiae AWRI796 chromosome XV AWRI796_c15_44; whole genome shotgun sequence
+996743
+1040328
+>AWRI796_gi|323331447|gb|ADVS01000045.1| Saccharomyces cerevisiae AWRI796 chromosome XV AWRI796_c15_45; whole genome shotgun sequence
+1040337
+1087038
+>AWRI796_gi|323331432|gb|ADVS01000046.1| Saccharomyces cerevisiae AWRI796 chromosome XV AWRI796_c15_46; whole genome shotgun sequence
+1087047
+1092480
+>AWRI796_gi|323331399|gb|ADVS01000047.1| Saccharomyces cerevisiae AWRI796 chromosome XV AWRI796_c15_47; whole genome shotgun sequence
+1092489
+1104116
+>AWRI796_gi|323331096|gb|ADVS01000048.1| Saccharomyces cerevisiae AWRI796 chromosome XVI AWRI796_c16_48; whole genome shotgun sequence
+1104125
+1194488
+>AWRI796_gi|323331069|gb|ADVS01000049.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c100_49; whole genome shotgun sequence
+1194497
+1195180
+>AWRI796_gi|323331064|gb|ADVS01000050.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1000_50; whole genome shotgun sequence
+1195189
+1195644
+>AWRI796_gi|323331062|gb|ADVS01000051.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1000_51; whole genome shotgun sequence
+1195653
+1195785
+>AWRI796_gi|323331060|gb|ADVS01000053.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1000_53; whole genome shotgun sequence
+1195794
+1195812
+>AWRI796_gi|323331059|gb|ADVS01000054.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1000_54; whole genome shotgun sequence
+1195821
+1196181
+>AWRI796_gi|323331054|gb|ADVS01000055.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1000_55; whole genome shotgun sequence
+1196190
+1196645
+>AWRI796_gi|323331048|gb|ADVS01000056.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_56; whole genome shotgun sequence
+1196654
+1198325
+>AWRI796_gi|323331046|gb|ADVS01000057.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_57; whole genome shotgun sequence
+1198334
+1199074
+>AWRI796_gi|323331044|gb|ADVS01000058.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_58; whole genome shotgun sequence
+1199083
+1199234
+>AWRI796_gi|323331043|gb|ADVS01000059.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_59; whole genome shotgun sequence
+1199243
+1199280
+>AWRI796_gi|323331040|gb|ADVS01000060.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_60; whole genome shotgun sequence
+1199289
+1199383
+>AWRI796_gi|323331036|gb|ADVS01000061.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_61; whole genome shotgun sequence
+1199392
+1199695
+>AWRI796_gi|323331034|gb|ADVS01000062.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_62; whole genome shotgun sequence
+1199704
+1199855
+>AWRI796_gi|323331027|gb|ADVS01000063.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_63; whole genome shotgun sequence
+1199864
+1200585
+>AWRI796_gi|323331024|gb|ADVS01000064.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_64; whole genome shotgun sequence
+1200594
+1200726
+>AWRI796_gi|323331023|gb|ADVS01000065.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_65; whole genome shotgun sequence
+1200735
+1200753
+>AWRI796_gi|323331020|gb|ADVS01000066.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_66; whole genome shotgun sequence
+1200762
+1201008
+>AWRI796_gi|323331018|gb|ADVS01000067.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_67; whole genome shotgun sequence
+1201017
+1201282
+>AWRI796_gi|323331017|gb|ADVS01000068.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_68; whole genome shotgun sequence
+1201291
+1201480
+>AWRI796_gi|323331014|gb|ADVS01000071.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_71; whole genome shotgun sequence
+1201489
+1201507
+>AWRI796_gi|323331012|gb|ADVS01000073.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_73; whole genome shotgun sequence
+1201516
+1201534
+>AWRI796_gi|323331011|gb|ADVS01000074.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_74; whole genome shotgun sequence
+1201543
+1201846
+>AWRI796_gi|323331010|gb|ADVS01000075.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_75; whole genome shotgun sequence
+1201855
+1202063
+>AWRI796_gi|323331008|gb|ADVS01000076.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_76; whole genome shotgun sequence
+1202072
+1202261
+>AWRI796_gi|323331007|gb|ADVS01000077.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_77; whole genome shotgun sequence
+1202270
+1202839
+>AWRI796_gi|323331004|gb|ADVS01000078.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_78; whole genome shotgun sequence
+1202848
+1203132
+>AWRI796_gi|323330999|gb|ADVS01000079.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_79; whole genome shotgun sequence
+1203141
+1203957
+>AWRI796_gi|323330998|gb|ADVS01000080.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_80; whole genome shotgun sequence
+1203966
+1204022
+>AWRI796_gi|323330997|gb|ADVS01000081.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_81; whole genome shotgun sequence
+1204031
+1204068
+>AWRI796_gi|323330995|gb|ADVS01000082.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_82; whole genome shotgun sequence
+1204077
+1204722
+>AWRI796_gi|323330994|gb|ADVS01000083.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_83; whole genome shotgun sequence
+1204731
+1204996
+>AWRI796_gi|323330990|gb|ADVS01000084.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_84; whole genome shotgun sequence
+1205005
+1206068
+>AWRI796_gi|323330983|gb|ADVS01000087.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_87; whole genome shotgun sequence
+1206077
+1206760
+>AWRI796_gi|323330982|gb|ADVS01000088.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_88; whole genome shotgun sequence
+1206769
+1206977
+>AWRI796_gi|323330979|gb|ADVS01000089.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_89; whole genome shotgun sequence
+1206986
+1207156
+>AWRI796_gi|323330974|gb|ADVS01000090.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_90; whole genome shotgun sequence
+1207165
+1207829
+>AWRI796_gi|323330971|gb|ADVS01000091.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_91; whole genome shotgun sequence
+1207838
+1208198
+>AWRI796_gi|323330969|gb|ADVS01000092.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_92; whole genome shotgun sequence
+1208207
+1208282
+>AWRI796_gi|323330966|gb|ADVS01000093.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_93; whole genome shotgun sequence
+1208291
+1209335
+>AWRI796_gi|323330961|gb|ADVS01000094.1| Saccharomyces cerevisiae AWRI796 chromosome Unknown AWRI796_c1001_94; whole genome shotgun sequence
+1209344
+1210046
+>BC187_gi|696438798|gb|JRII01000006.1| Saccharomyces cerevisiae BC187 scaffold-5; whole genome shotgun sequence [length=24997]
+1210055
+1210073
+>BC187_gi|696438270|gb|JRII01000143.1| Saccharomyces cerevisiae BC187 scaffold-148; whole genome shotgun sequence [length=13992]
+1210082
+1210100
+>BC187_gi|696437781|gb|JRII01000272.1| Saccharomyces cerevisiae BC187 scaffold-287; whole genome shotgun sequence [length=2113]
+1210109
+1210127
+>BC187_gi|696437694|gb|JRII01000298.1| Saccharomyces cerevisiae BC187 scaffold-315; whole genome shotgun sequence [length=2368]
+1210136
+1210154
+>BC187_gi|696437461|gb|JRII01000373.1| Saccharomyces cerevisiae BC187 scaffold-393; whole genome shotgun sequence [length=6288]
+1210163
+1210181
+>CLIB215_gi|325947573|gb|AEWP01000016.1| Saccharomyces cerevisiae CLIB215 Contig1.8; whole genome shotgun sequence
+1210190
+1210208
+>CLIB215_gi|325947269|gb|AEWP01000320.1| Saccharomyces cerevisiae CLIB215 Contig54.1; whole genome shotgun sequence
+1210217
+1210235
+>CLIB215_gi|325947195|gb|AEWP01000394.1| Saccharomyces cerevisiae CLIB215 Contig65.13; whole genome shotgun sequence
+1210244
+1210262
+>CLIB215_gi|325947108|gb|AEWP01000481.1| Saccharomyces cerevisiae CLIB215 Contig85.3; whole genome shotgun sequence
+1210271
+1210289
+>CLIB215_gi|325947053|gb|AEWP01000536.1| Saccharomyces cerevisiae CLIB215 Contig100.4; whole genome shotgun sequence
+1210298
+1210316
+>CLIB215_gi|325946678|gb|AEWP01000911.1| Saccharomyces cerevisiae CLIB215 Contig205.4; whole genome shotgun sequence
+1210325
+1210343
+>CLIB215_gi|325946622|gb|AEWP01000967.1| Saccharomyces cerevisiae CLIB215 Contig226.4; whole genome shotgun sequence
+1210352
+1210370
+>CLIB215_gi|325946519|gb|AEWP01001070.1| Saccharomyces cerevisiae CLIB215 Contig264.3; whole genome shotgun sequence
+1210379
+1210397
+>CLIB324_gi|325941275|gb|AEWM01000048.1| Saccharomyces cerevisiae CLIB324 Contig3.6; whole genome shotgun sequence
+1210406
+1210424
+>CLIB324_gi|325940980|gb|AEWM01000343.1| Saccharomyces cerevisiae CLIB324 Contig30.3; whole genome shotgun sequence
+1210433
+1210451
+>CLIB324_gi|325940916|gb|AEWM01000407.1| Saccharomyces cerevisiae CLIB324 Contig35.9; whole genome shotgun sequence
+1210460
+1210478
+>CLIB324_gi|325940639|gb|AEWM01000684.1| Saccharomyces cerevisiae CLIB324 Contig64.5; whole genome shotgun sequence
+1210487
+1210505
+>CLIB324_gi|325940622|gb|AEWM01000701.1| Saccharomyces cerevisiae CLIB324 Contig67.4; whole genome shotgun sequence
+1210514
+1210532
+>CLIB324_gi|325940598|gb|AEWM01000725.1| Saccharomyces cerevisiae CLIB324 Contig69.5; whole genome shotgun sequence
+1210541
+1210559
+>CLIB324_gi|325940532|gb|AEWM01000791.1| Saccharomyces cerevisiae CLIB324 Contig76.3; whole genome shotgun sequence
+1210568
+1210586
+>CLIB324_gi|325940526|gb|AEWM01000797.1| Saccharomyces cerevisiae CLIB324 Contig77.1; whole genome shotgun sequence
+1210595
+1210613
+>CLIB324_gi|325940204|gb|AEWM01001119.1| Saccharomyces cerevisiae CLIB324 Contig122.2; whole genome shotgun sequence
+1210622
+1210640
+>CLIB324_gi|325940199|gb|AEWM01001124.1| Saccharomyces cerevisiae CLIB324 Contig123.2; whole genome shotgun sequence
+1210649
+1210667
+>CLIB324_gi|325940150|gb|AEWM01001173.1| Saccharomyces cerevisiae CLIB324 Contig130.1; whole genome shotgun sequence
+1210676
+1210694
+>CLIB324_gi|325939927|gb|AEWM01001396.1| Saccharomyces cerevisiae CLIB324 Contig163.7; whole genome shotgun sequence
+1210703
+1210721
+>CLIB324_gi|325939543|gb|AEWM01001780.1| Saccharomyces cerevisiae CLIB324 Contig236.4; whole genome shotgun sequence
+1210730
+1210748
+>CLIB324_gi|325939411|gb|AEWM01001912.1| Saccharomyces cerevisiae CLIB324 Contig264.6; whole genome shotgun sequence
+1210757
+1210775
+>CLIB324_gi|325939361|gb|AEWM01001962.1| Saccharomyces cerevisiae CLIB324 Contig277.3; whole genome shotgun sequence
+1210784
+1210802
+>CLIB324_gi|325939284|gb|AEWM01002039.1| Saccharomyces cerevisiae CLIB324 Contig294.4; whole genome shotgun sequence
+1210811
+1210829
+>CLIB324_gi|325939185|gb|AEWM01002138.1| Saccharomyces cerevisiae CLIB324 Contig317.1; whole genome shotgun sequence
+1210838
+1210856
+>CLIB324_gi|325939118|gb|AEWM01002205.1| Saccharomyces cerevisiae CLIB324 Contig333.3; whole genome shotgun sequence
+1210865
+1210883
+>CLIB324_gi|325939074|gb|AEWM01002249.1| Saccharomyces cerevisiae CLIB324 Contig344.2; whole genome shotgun sequence
+1210892
+1210910
+>CLIB324_gi|325938818|gb|AEWM01002505.1| Saccharomyces cerevisiae CLIB324 Contig408.1; whole genome shotgun sequence
+1210919
+1210937
+>CLIB324_gi|325938766|gb|AEWM01002557.1| Saccharomyces cerevisiae CLIB324 Contig424.1; whole genome shotgun sequence
+1210946
+1210964
+>CLIB324_gi|325938621|gb|AEWM01002702.1| Saccharomyces cerevisiae CLIB324 Contig468.3; whole genome shotgun sequence
+1210973
+1210991
+>CLIB324_gi|325938610|gb|AEWM01002713.1| Saccharomyces cerevisiae CLIB324 Contig471.3; whole genome shotgun sequence
+1211000
+1211018
+>CLIB324_gi|325938459|gb|AEWM01002864.1| Saccharomyces cerevisiae CLIB324 Contig516.2; whole genome shotgun sequence
+1211027
+1211045
+>CLIB324_gi|325938314|gb|AEWM01003009.1| Saccharomyces cerevisiae CLIB324 Contig573.3; whole genome shotgun sequence
+1211054
+1211072
+>CLIB324_gi|325938267|gb|AEWM01003056.1| Saccharomyces cerevisiae CLIB324 Contig595.2; whole genome shotgun sequence
+1211081
+1211099
+>CLIB324_gi|325937931|gb|AEWM01003392.1| Saccharomyces cerevisiae CLIB324 Contig853.1; whole genome shotgun sequence
+1211108
+1211126
+>CLIB324_gi|325937877|gb|AEWM01003446.1| Saccharomyces cerevisiae CLIB324 Contig907.1; whole genome shotgun sequence
+1211135
+1211153
+>CLIB324_gi|325937825|gb|AEWM01003498.1| Saccharomyces cerevisiae CLIB324 Contig959.1; whole genome shotgun sequence
+1211162
+1211180
+>DBVPG6044_gi|696436068|gb|JRIG01000127.1| Saccharomyces cerevisiae DBVPG6044 scaffold-133; whole genome shotgun sequence [length=21349]
+1211189
+1211207
+>DBVPG6044_gi|696434878|gb|JRIG01000462.1| Saccharomyces cerevisiae DBVPG6044 scaffold-479; whole genome shotgun sequence [length=27624]
+1211216
+1211234
+>L1528_gi|696440832|gb|JRIK01000020.1| Saccharomyces cerevisiae L1528 scaffold-19; whole genome shotgun sequence [length=17449]
+1211243
+1211261
+>L1528_gi|696440501|gb|JRIK01000103.1| Saccharomyces cerevisiae L1528 scaffold-108; whole genome shotgun sequence [length=58309]
+1211270
+1211288
+>L1528_gi|696439826|gb|JRIK01000270.1| Saccharomyces cerevisiae L1528 scaffold-280; whole genome shotgun sequence [length=17422]
+1211297
+1211315
+>L1528_gi|696439666|gb|JRIK01000316.1| Saccharomyces cerevisiae L1528 scaffold-329; whole genome shotgun sequence [length=11031]
+1211324
+1211342
+>LalvinQA23_gi|323345801|gb|ADVV01000161.1| Saccharomyces cerevisiae Lalvin QA23 chromosome Unknown QA23_c1001_162; whole genome shotgun sequence
+1211351
+1211369
+>LalvinQA23_gi|323345762|gb|ADVV01000176.1| Saccharomyces cerevisiae Lalvin QA23 chromosome Unknown QA23_c1001_177; whole genome shotgun sequence
+1211378
+1211396
+>RedStar_gi|696439714|gb|JRIL01000346.1| Saccharomyces cerevisiae RedStar unplaced-838; whole genome shotgun sequence [length=5043]
+1211405
+1211423
+>RedStar_gi|696439563|gb|JRIL01000388.1| Saccharomyces cerevisiae RedStar unplaced-889; whole genome shotgun sequence [length=1608]
+1211432
+1211450
+>RedStar_gi|696439531|gb|JRIL01000396.1| Saccharomyces cerevisiae RedStar unplaced-899; whole genome shotgun sequence [length=2054]
+1211459
+1211477
+>YS9_gi|696432062|gb|JRIB01000027.1| Saccharomyces cerevisiae YS9 scaffold-28; whole genome shotgun sequence [length=36629]
+1211486
+1211504
+>YS9_gi|696431734|gb|JRIB01000118.1| Saccharomyces cerevisiae YS9 scaffold-132; whole genome shotgun sequence [length=21507]
+1211513
+1211531
+>YS9_gi|696431284|gb|JRIB01000237.1| Saccharomyces cerevisiae YS9 scaffold-274; whole genome shotgun sequence [length=40613]
+1211540
+1211558
+>YS9_gi|696431267|gb|JRIB01000241.1| Saccharomyces cerevisiae YS9 scaffold-278; whole genome shotgun sequence [length=1632]
+1211567
+1211585
+>YS9_gi|696429764|gb|JRIB01000651.1| Saccharomyces cerevisiae YS9 unplaced-227; whole genome shotgun sequence [length=207]
+1211594
+1211612
+>YS9_gi|696429276|gb|JRIB01000782.1| Saccharomyces cerevisiae YS9 unplaced-850; whole genome shotgun sequence [length=2489]
+1211621
+1211639
