@@ -28,8 +28,9 @@ def compute_stats(filename):
 
 if __name__ == "__main__":
     for filename in [
-            "output.k1000.20.txt",
-            "output.k100.50.txt",
-            "output.k25.20.txt"
+            "output.k1000.19.txt",
+            "output.k500.19.txt",
+            "output.k100.19.txt",
+            "output.k25.19.txt"
     ]:
         compute_stats(filename)
