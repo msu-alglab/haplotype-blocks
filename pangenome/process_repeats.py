@@ -116,7 +116,9 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
                 else:
                     raise ValueError("State was not O or N")
                 snps.append(snp_id + ":" + state_out)
-            if len(snps) > 0:
+            if len(set(indices)) < len(indices):
+                print("Duplicate indices")
+            if len(snps) > 0 and len(set(indices)) > 1:
                 f.write(' '.join(snps) + "\n")
     f.close()
 
@@ -205,6 +207,7 @@ def get_repeats(repeats_filename, filename):
         start1 = int(line.split()[0]) - 1
         start2 = int(line.split()[1]) - 1
         length = int(line.split()[2])
+        og_length = length
         print("Looking for crops for start", start1)
         crop_start, crop_end = crop(start1, length)
         start1 = start1 + crop_start
@@ -236,6 +239,11 @@ def get_repeats(repeats_filename, filename):
                 print(long_string[start2:start2+length])
                 raise AssertionError(
                     "There is a y remaining in trimmed repeat")
+        else:
+            print("length {} was not a valid repeat".format(og_length))
+            if og_length > 50:
+                raise AssertionError(
+                    "a long repeat not included")
     # for weight in weights:
     repeats = []
     for weight in set(weights):
