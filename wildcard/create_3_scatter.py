@@ -18,11 +18,17 @@ for file, color in zip(files, colors):
     y = sampled[:, 1]
     prop = file.split("-")[2]
     ax = axes[ax_index]
-    ax.scatter(x, y, color=color, alpha=0.05)
+    ax.scatter(x, y, color=color, alpha=0.01, s=10)
     ax.set_title(prop + " Proportion Wildcard")
-    ax_index += 1
-    if ax_index == 1:
+    print("ax index ={}".format(ax_index))
+    if ax_index == 0:
+        print("So setting ylab")
         ax.set(ylabel="Number of paths")
+    else:
+        print("so removing ticks")
+        ax.set(yticks=[])
+        ax.set(yticklabels=[])
+    ax_index += 1
     ax.set(xlabel="Number of SNPs")
 
 plt.savefig("three_scatterplots.pdf")
