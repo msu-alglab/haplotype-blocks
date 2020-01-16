@@ -1,17 +1,16 @@
+import numpy as np
 import matplotlib.pyplot as plt
 
 files = ["/home/bmumey/wh/chr22-full/output.txt.dist-0.0-500000.txt"]
-colors = ["red"]
 
-for file, color in zip(files, colors):
-    f = open(file)
-    lines = f.readlines()
-    x = [x.split(",")[0] for x in lines]
-    y = [x.split(",")[1] for x in lines]
-    plt.scatter(x, y, c=color, alpha=0.1, label="k=100")
+for file in files:
+    my_data = np.genfromtxt(file, delimiter=",")
+    sampled = my_data[np.random.choice(my_data.shape[0], 10000, replace=False)]
+    x = sampled[:, 0]
+    y = sampled[:, 1]
+    plt.scatter(x, y, color="red", label="500000")
+    plt.xlabel("Number of paths")
+    plt.ylabel("Number of SNPs")
 
-plt.xlabel("Number of paths")
-plt.ylabel("Number of SNPs")
-
-plt.legend()
-plt.savefig("scatterplot.pdf")
+    plt.legend()
+    plt.savefig("scatterplot.pdf")
