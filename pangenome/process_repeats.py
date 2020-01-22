@@ -124,6 +124,7 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
 
 
 def get_path_locs(TERMINATION_LENGTH, pathlocs_filename):
+    """Get a dictionary of start/end positions to path ids"""
     f = open(pathlocs_filename)
     lines = f.readlines()
     locs = dict()
@@ -302,10 +303,12 @@ def get_params(filename):
 if __name__ == "__main__":
     # start timer
     start_time = time.time()
-    # read in k and min repeat length, which will help us build the filenames
-    k = sys.argv[1]
-    min_length = sys.argv[2]
 
+    # read in k and min repeat length, which will help us build the filenames
+    k = sys.argv[1]             # k from de bruijn graph
+    min_length = sys.argv[2]    # minimum repeat length found by mummer
+
+    # expected filenames
     filename = "yeast10.k" + k + ".fa"
     repeats_filename = "repeats.k" + k + "." + min_length + ".txt"
     pathlocs_filename = "pathlocs.k" + k + ".txt"
@@ -319,9 +322,14 @@ if __name__ == "__main__":
     f.readline()
     lines = f.readlines()
     lines = [x.strip() for x in lines]
+    # long string of paths through cbdg
     long_string = ''.join(lines).strip()
 
+    # locs is dictionary with start/end indices as keys and path index as
+    # values
     locs = get_path_locs(termination_length, pathlocs_filename)
+
+    # look at the repeats file and find sets of repeats
     repeats = get_repeats(repeats_filename, filename)
 
     process_repeats(repeats, long_string, locs, snp_length, k, min_length)
