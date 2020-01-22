@@ -45,8 +45,45 @@ def get_distinct_repeats(repeats_filename, repeats, long_string):
     return clean_repeats
 
 
-def process_repeats(repeats, long_string, locs, snp_length, k, m):
-    f = open("output.k"+k+"."+m+".txt", "w")
+def get_occ_from_file(start, length, filename, first_line_length):
+    """Look into yeast10.k.fa file for this occurrence and the character
+    directly to the left and directly to the right"""
+    f = open(filename)
+    num_linebreaks = start // 80
+    start_how_far_into_a_line = start % 80
+    repeat_start = first_line_length + num_linebreaks + start
+    linebreaks_in_repeat = (start_how_far_into_a_line + length) // 80
+    f.seek(repeat_start)
+    part_of_file = f.read(length + linebreaks_in_repeat)
+    occ = "".join(part_of_file.split("\n"))
+    # check whether this character before this is a linebreak
+    if start % 80 == 0:
+        # if it is, go back two
+        f.seek(repeat_start - 2)
+    else:
+        # otherwise, just go back one
+        f.seek(repeat_start - 1)
+    one_lefts = set(f.read(1))
+    f.seek(repeat_start + length + linebreaks_in_repeat)
+    one_rights = set(f.read(1))
+    return occ, one_lefts, one_rights
+
+
+def get_first_line_length(filename):
+    """Get the number of characters in the first line of the .fa file"""
+    f = open(filename)
+    first_line = f.readline()
+    return len(first_line)
+
+
+def process_repeats(repeats, long_string, locs, snp_length, k, m, filename,
+                    test=False):
+    if test:
+        file_to_write = "output.k" + k + "." + m + "_test.txt"
+    else:
+        file_to_write = "output.k" + k + "." + m + ".txt"
+    f = open(file_to_write, "w")
+    first_line_length = get_first_line_length(filename)
     for repeat in repeats:
         starts = repeat[0]
         length = repeat[1]
@@ -58,6 +95,22 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m):
         one_right = long_string[end]
         one_lefts = set(one_left)
         one_rights = set(one_right)
+        occ2, one_lefts2, one_rights2 = get_occ_from_file(
+            start,
+            length,
+            filename,
+            first_line_length
+        )
+        print("start=", start)
+        print("one_lefts=", one_lefts)
+        print("one_lefts2=", one_lefts2)
+        print("one_rights=", one_rights)
+        print("one_rights2", one_rights2)
+        print("occ =", occ)
+        print("occ2=", occ2)
+        assert occ == occ2
+        assert one_lefts == one_lefts2
+        assert one_rights == one_rights2
         print("-----Processing repeats at starts {}".format(starts))
         for start in starts[1:]:
             # if there are three or more occurrences, we only need one mismatch
@@ -147,7 +200,7 @@ def get_path_locs(TERMINATION_LENGTH, pathlocs_filename):
     return locs
 
 
-def crop(start, length):
+def crop(start, length, filename):
     """Given a start and length, crop it to include only snps."""
     f = open(filename, "r")
     # get rid of header line
@@ -210,7 +263,7 @@ def get_repeats(repeats_filename, filename):
         length = int(line.split()[2])
         og_length = length
         print("Looking for crops for start", start1)
-        crop_start, crop_end = crop(start1, length)
+        crop_start, crop_end = crop(start1, length, filename)
         start1 = start1 + crop_start
         start2 = start2 + crop_start
         length = length - crop_start - crop_end
@@ -332,5 +385,6 @@ if __name__ == "__main__":
     # look at the repeats file and find sets of repeats
     repeats = get_repeats(repeats_filename, filename)
 
-    process_repeats(repeats, long_string, locs, snp_length, k, min_length)
+    process_repeats(repeats, long_string, locs, snp_length, k, min_length,
+                    filename)
     print("--- %s seconds ---" % (time.time() - start_time))
