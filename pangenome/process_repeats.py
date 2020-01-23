@@ -63,9 +63,9 @@ def get_occ_from_file(start, length, filename, first_line_length):
     else:
         # otherwise, just go back one
         f.seek(repeat_start - 1)
-    one_lefts = set(f.read(1))
+    one_lefts = f.read(1)
     f.seek(repeat_start + length + linebreaks_in_repeat)
-    one_rights = set(f.read(1))
+    one_rights = f.read(1)
     return occ, one_lefts, one_rights
 
 
@@ -76,7 +76,7 @@ def get_first_line_length(filename):
     return len(first_line)
 
 
-def process_repeats(repeats, long_string, locs, snp_length, k, m, filename,
+def process_repeats(repeats, locs, snp_length, k, m, filename,
                     test=False):
     if test:
         file_to_write = "output.k" + k + "." + m + "_test.txt"
@@ -89,36 +89,25 @@ def process_repeats(repeats, long_string, locs, snp_length, k, m, filename,
         length = repeat[1]
         print("Length of this repeat is {}".format(length))
         start = starts[0]
-        end = start + length
-        occ = long_string[start:end]
-        one_left = long_string[start - 1]
-        one_right = long_string[end]
-        one_lefts = set(one_left)
-        one_rights = set(one_right)
-        occ2, one_lefts2, one_rights2 = get_occ_from_file(
+        occ, one_left, one_right = get_occ_from_file(
             start,
             length,
             filename,
             first_line_length
         )
-        print("start=", start)
-        print("one_lefts=", one_lefts)
-        print("one_lefts2=", one_lefts2)
-        print("one_rights=", one_rights)
-        print("one_rights2", one_rights2)
-        print("occ =", occ)
-        print("occ2=", occ2)
-        assert occ == occ2
-        assert one_lefts == one_lefts2
-        assert one_rights == one_rights2
+        one_lefts = set(one_left)
+        one_rights = set(one_right)
         print("-----Processing repeats at starts {}".format(starts))
         for start in starts[1:]:
             # if there are three or more occurrences, we only need one mismatch
             # on right and left.
-            end = start + length
-            this_occ = long_string[start:end]
-            this_one_left = long_string[start - 1]
-            this_one_right = long_string[end]
+            this_occ, this_one_left, this_one_right = get_occ_from_file(
+                start,
+                length,
+                filename,
+                first_line_length
+            )
+
             one_lefts.add(this_one_left)
             one_rights.add(this_one_right)
             if this_occ != occ:
@@ -385,6 +374,6 @@ if __name__ == "__main__":
     # look at the repeats file and find sets of repeats
     repeats = get_repeats(repeats_filename, filename)
 
-    process_repeats(repeats, long_string, locs, snp_length, k, min_length,
+    process_repeats(repeats, locs, snp_length, k, min_length,
                     filename)
     print("--- %s seconds ---" % (time.time() - start_time))
