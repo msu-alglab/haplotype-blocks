@@ -202,8 +202,6 @@ def crop(start, length, filename, first_line_length):
     print("Repeat looking to crop is", repeat)
     first_s = repeat.find("S")
     crop_start = first_s
-    if first_s == -1:
-        print("No S!")
     # no matter what, we should crop to the first s.
     repeat = repeat[crop_start:]
     print("After deleting front, repeat is", repeat)
@@ -219,18 +217,37 @@ def crop(start, length, filename, first_line_length):
     return (crop_start, crop_end)
 
 
+def check_repeats(repeat1, repeat2):
+    """After cropping assert that there are no x's or y's and that the repeats
+    are still the same."""
+    if "X" in repeat1:
+        print(repeat1)
+        raise AssertionError(
+            "There is an x remaining in trimmed repeat")
+    if "Y" in repeat1:
+        print(repeat1)
+        raise AssertionError(
+            "There is a y remaining in trimmed repeat")
+    if "X" in repeat2:
+        print(repeat2)
+        raise AssertionError(
+            "There is an x remaining in trimmed repeat")
+    if "Y" in repeat2:
+        print(repeat2)
+        raise AssertionError(
+            "There is a y remaining in trimmed repeat")
+    if repeat1 != repeat2:
+        print(repeat1)
+        print(repeat2)
+        raise AssertionError(
+            "repeats are not the same"
+        )
+
+
 def get_repeats(repeats_filename, filename):
     """Use connected components approach to find repeats."""
 
     first_line_length = get_first_line_length(filename)
-
-    # for debugging, get long string
-    f = open(filename, "r")
-    # get rid of header line
-    f.readline()
-    lines = f.readlines()
-    lines = [x.strip() for x in lines]
-    long_string = ''.join(lines).strip()
 
     f = open(repeats_filename)
     f.readline()
@@ -259,30 +276,30 @@ def get_repeats(repeats_filename, filename):
         length = length - crop_start - crop_end
         if length == -1:
             print("Length == -1!")
+        if crop_start == -1:
+            print("crop_start is -1!")
         print("After cropping")
         print("start=", start1)
         print("start=", start2)
         print("length=", length)
-        print("Repeat=", long_string[start1:start1+length])
+
         if crop_start > -1 and length > 0:
+            repeat1, l, r = get_occ_from_file(
+                start1,
+                length,
+                filename,
+                first_line_length
+            )
+            repeat2, l, r = get_occ_from_file(
+                start2,
+                length,
+                filename,
+                first_line_length
+            )
+
             g.add_edge(start1, start2, length=length)
             weights.append(length)
-            if "X" in long_string[start1:start1+length]:
-                print(long_string[start1:start1+length])
-                raise AssertionError(
-                    "There is an x remaining in trimmed repeat")
-            if "Y" in long_string[start1:start1+length]:
-                print(long_string[start1:start1+length])
-                raise AssertionError(
-                    "There is a y remaining in trimmed repeat")
-            if "X" in long_string[start2:start2+length]:
-                print(long_string[start2:start2+length])
-                raise AssertionError(
-                    "There is an x remaining in trimmed repeat")
-            if "Y" in long_string[start2:start2+length]:
-                print(long_string[start2:start2+length])
-                raise AssertionError(
-                    "There is a y remaining in trimmed repeat")
+            check_repeats(repeat1, repeat2)
         else:
             print("length {} was not a valid repeat".format(og_length))
             if og_length > 50:
