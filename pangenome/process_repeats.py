@@ -189,16 +189,16 @@ def get_path_locs(TERMINATION_LENGTH, pathlocs_filename):
     return locs
 
 
-def crop(start, length, filename):
+def crop(start, length, filename, first_line_length):
     """Given a start and length, crop it to include only snps."""
-    f = open(filename, "r")
-    # get rid of header line
-    f.readline()
-    lines = f.readlines()
-    lines = [x.strip() for x in lines]
-    long_string = ''.join(lines).strip()
 
-    repeat = long_string[start:start + length]
+    repeat, one_left, one_right = get_occ_from_file(
+        start,
+        length,
+        filename,
+        first_line_length
+    )
+
     print("Repeat looking to crop is", repeat)
     first_s = repeat.find("S")
     crop_start = first_s
@@ -212,22 +212,18 @@ def crop(start, length, filename):
     first_n = repeat.find("N")
     if first_o + first_n == -2:
         crop_end = len(repeat)
-        print("No O or N")
     else:
         last_o_or_n = max([i for (i, val) in enumerate(repeat) if
                            val in ("N", "O")])
-        print("Last o or n is at", last_o_or_n)
         crop_end = len(repeat) - last_o_or_n - 1
-    print("crop start, crop end", (crop_start, crop_end))
-    print("Going back to long string, repeat should be")
-    print(long_string[start + crop_start:start + length - crop_end])
-    print("Start should be {}".format(start + crop_start))
-    print("Length should be {}".format(length - crop_start - crop_end))
     return (crop_start, crop_end)
 
 
 def get_repeats(repeats_filename, filename):
     """Use connected components approach to find repeats."""
+
+    first_line_length = get_first_line_length(filename)
+
     # for debugging, get long string
     f = open(filename, "r")
     # get rid of header line
@@ -252,7 +248,12 @@ def get_repeats(repeats_filename, filename):
         length = int(line.split()[2])
         og_length = length
         print("Looking for crops for start", start1)
-        crop_start, crop_end = crop(start1, length, filename)
+        crop_start, crop_end = crop(
+            start1,
+            length,
+            filename,
+            first_line_length
+        )
         start1 = start1 + crop_start
         start2 = start2 + crop_start
         length = length - crop_start - crop_end
@@ -327,17 +328,22 @@ def get_params(filename):
     termination character encoding."""
     f = open(filename)
     f.readline()
-    lines = f.readlines()
-    long_string = ''.join([x.strip() for x in lines])
-    first_o = long_string.find("O")
-    first_n = long_string.find("N")
+    lines = []
+    # assume that we'll find the end of the first snp and the first termination
+    # character in the first 10 lines (very generous assumption!)
+    for i in range(10):
+        lines.append(f.readline())
+
+    ten_lines = ''.join([x.strip() for x in lines])
+    first_o = ten_lines.find("O")
+    first_n = ten_lines.find("N")
     end_of_first_snp = min(first_o, first_n)
     # snp goes from 1-end of first snp
-    first_x = long_string.find("X")
-    first_y = long_string.find("Y")
+    first_x = ten_lines.find("X")
+    first_y = ten_lines.find("Y")
     start_of_term = min(first_x, first_y)
-    long_string = long_string[start_of_term:]
-    next_s = long_string.find("S")
+    ten_lines = ten_lines[start_of_term:]
+    next_s = ten_lines.find("S")
     # term goes from 0 to next_s - 1
     return (end_of_first_snp - 1, next_s)
 
@@ -358,14 +364,6 @@ if __name__ == "__main__":
     # look at file and figure out how long the snp encoding and termination
     # character encodings are.
     snp_length, termination_length = get_params(filename)
-
-    f = open(filename, "r")
-    # get rid of header line
-    f.readline()
-    lines = f.readlines()
-    lines = [x.strip() for x in lines]
-    # long string of paths through cbdg
-    long_string = ''.join(lines).strip()
 
     # locs is dictionary with start/end indices as keys and path index as
     # values
