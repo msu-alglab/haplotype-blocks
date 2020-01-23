@@ -3,48 +3,6 @@ import networkx as nx
 import sys
 
 
-def get_distinct_repeats(repeats_filename, repeats, long_string):
-    """Find distinct repeats from repeat file."""
-
-    # build a dict by length
-    f = open(repeats_filename)
-    repeat_dict = {}
-    for repeat in repeats:
-        start1, start2, length = repeat
-        if length not in repeat_dict:
-            repeat_dict[length] = []
-        repeat_dict[length].append(start1)
-        repeat_dict[length].append(start2)
-    f.close()
-
-    # if a length has more than one repeat, disambiguate
-    clean_repeats = []
-    for length in repeat_dict:
-        values = repeat_dict[length]
-        num_values = len(values)
-        # need to disambiguate
-        if num_values == 2:
-            # only one repeat of this length
-            values = [values[0]-1, values[1]-1]
-            clean_repeats.append([values, length])
-        else:
-            # print("Length {} has {} elements".format(length, num_values))
-            # print(values)
-            occs = {}
-            for s in values:
-                start = s - 1
-                end = s + length - 1
-                occ = long_string[start:end]
-                if occ not in occs:
-                    occs[occ] = [start]
-                else:
-                    occs[occ].append(start)
-            for starts in occs.values():
-                clean_repeats.append([list(set(starts)), length])
-
-    return clean_repeats
-
-
 def get_occ_from_file(start, length, filename, first_line_length):
     """Look into yeast10.k.fa file for this occurrence and the character
     directly to the left and directly to the right"""
@@ -199,12 +157,10 @@ def crop(start, length, filename, first_line_length):
         first_line_length
     )
 
-    print("Repeat looking to crop is", repeat)
     first_s = repeat.find("S")
     crop_start = first_s
     # no matter what, we should crop to the first s.
     repeat = repeat[crop_start:]
-    print("After deleting front, repeat is", repeat)
     # find last o or n
     first_o = repeat.find("O")
     first_n = repeat.find("N")
@@ -258,31 +214,24 @@ def get_repeats(repeats_filename, filename):
     print("About to find repeats")
     counter = 0
     for line in lines:
-        print("Looking at line", counter)
         counter += 1
         start1 = int(line.split()[0]) - 1
         start2 = int(line.split()[1]) - 1
         length = int(line.split()[2])
         og_length = length
-        print("Looking for crops for start", start1)
+        # crop this repeat
         crop_start, crop_end = crop(
             start1,
             length,
             filename,
             first_line_length
         )
+        # new start, end length
         start1 = start1 + crop_start
         start2 = start2 + crop_start
         length = length - crop_start - crop_end
-        if length == -1:
-            print("Length == -1!")
-        if crop_start == -1:
-            print("crop_start is -1!")
-        print("After cropping")
-        print("start=", start1)
-        print("start=", start2)
-        print("length=", length)
 
+        # if the cropped version actually contains SNPs, add to graph
         if crop_start > -1 and length > 0:
             repeat1, l, r = get_occ_from_file(
                 start1,
@@ -301,14 +250,13 @@ def get_repeats(repeats_filename, filename):
             weights.append(length)
             check_repeats(repeat1, repeat2)
         else:
-            print("length {} was not a valid repeat".format(og_length))
+            # assert that, if this repeat was long, it should have had snps
             if og_length > 50:
                 raise AssertionError(
                     "a long repeat not included")
     # for weight in weights:
     repeats = []
     for weight in set(weights):
-        print("building subgraph for weight {}".format(weight))
         subgraph = nx.Graph()
         # build subgraph with ony edges this weight or greater
         for edge in g.edges(data=True):
