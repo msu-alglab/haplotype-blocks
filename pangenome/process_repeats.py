@@ -7,15 +7,26 @@ def get_occ_from_file(start, length, filename, first_line_length):
     """Look into yeast10.k.fa file for this occurrence and the character
     directly to the left and directly to the right"""
     f = open(filename)
-    num_linebreaks = start // 80
-    start_how_far_into_a_line = start % 80
+    fasta_line_length = 80
+    num_linebreaks = start // fasta_line_length
+    # print("start=", start)
+    # print("length=", length)
+    # print("first_line_length=", first_line_length)
+    # print("num_linebreaks=", num_linebreaks)
+    start_how_far_into_a_line = (start + num_linebreaks) % (fasta_line_length +
+                                                            1)
+    # print("start_how_far_into_a_line=", start_how_far_into_a_line)
     repeat_start = first_line_length + num_linebreaks + start
-    linebreaks_in_repeat = (start_how_far_into_a_line + length) // 80
+    # print("repeat_start=", repeat_start)
+    linebreaks_in_repeat = (start_how_far_into_a_line + length) //\
+        fasta_line_length
+    # print("linebreaks_in_repeat=", linebreaks_in_repeat)
     f.seek(repeat_start)
     part_of_file = f.read(length + linebreaks_in_repeat)
+    # print("og_occ=", part_of_file)
     occ = "".join(part_of_file.split("\n"))
-    # check whether this character before this is a linebreak
-    if start % 80 == 0:
+    # check whether the character before this is a linebreak
+    if start % fasta_line_length == 0:
         # if it is, go back two
         f.seek(repeat_start - 2)
     else:
@@ -87,9 +98,12 @@ def process_repeats(repeats, locs, snp_length, k, m, filename,
                 if start >= key[0] and end <= key[1]:
                     name = locs[key]
             indices.append(str(name))
-        f.write(" ".join(indices) + "\n")
-        print("Paths are:")
-        print(" ".join(indices))
+        if len(set(indices)) > 1:
+            f.write(" ".join(indices) + "\n")
+            print("Paths are:")
+            print(" ".join(indices))
+        else:
+            print("Only supported by one path")
 
         # figure out which snps
         start_index = occ.find('S')
@@ -177,19 +191,19 @@ def check_repeats(repeat1, repeat2):
     """After cropping assert that there are no x's or y's and that the repeats
     are still the same."""
     if "X" in repeat1:
-        print(repeat1)
+        print(repeat1, repeat2)
         raise AssertionError(
             "There is an x remaining in trimmed repeat")
     if "Y" in repeat1:
-        print(repeat1)
+        print(repeat1, repeat2)
         raise AssertionError(
             "There is a y remaining in trimmed repeat")
     if "X" in repeat2:
-        print(repeat2)
+        print(repeat1, repeat2)
         raise AssertionError(
             "There is an x remaining in trimmed repeat")
     if "Y" in repeat2:
-        print(repeat2)
+        print(repeat1, repeat2)
         raise AssertionError(
             "There is a y remaining in trimmed repeat")
     if repeat1 != repeat2:
@@ -198,6 +212,29 @@ def check_repeats(repeat1, repeat2):
         raise AssertionError(
             "repeats are not the same"
         )
+
+
+def check_this_match(start1, start2, length, filename, first_line_length):
+    """Assert that this mummer match is equal and is right and left maximal."""
+    # print("getting repeat1")
+    repeat1, one_left1, one_right1 = get_occ_from_file(
+        start1,
+        length,
+        filename,
+        first_line_length
+    )
+    # print("getting repeat2")
+    repeat2, one_left2, one_right2 = get_occ_from_file(
+        start2,
+        length,
+        filename,
+        first_line_length
+    )
+    # print("repeat1=", repeat1)
+    # print("repeat2=", repeat2)
+    assert repeat1 == repeat2
+    assert one_left1 != one_left2
+    assert one_right1 != one_right2
 
 
 def get_repeats(repeats_filename, filename):
@@ -211,13 +248,16 @@ def get_repeats(repeats_filename, filename):
     lines = f.readlines()
     g = nx.Graph()
     weights = []
-    print("About to find repeats")
+    print("Processing mummer file...")
     counter = 0
     for line in lines:
         counter += 1
+        if counter % 100000 == 0:
+            print("Looking at line {} of mummer file".format(counter))
         start1 = int(line.split()[0]) - 1
         start2 = int(line.split()[1]) - 1
         length = int(line.split()[2])
+        check_this_match(start1, start2, length, filename, first_line_length)
         og_length = length
         # crop this repeat
         crop_start, crop_end = crop(
@@ -295,18 +335,25 @@ def get_params(filename):
     f.readline()
     lines = []
     # assume that we'll find the end of the first snp and the first termination
-    # character in the first 10 lines (very generous assumption!)
-    for i in range(10):
+    # character in the first 100 lines
+    for i in range(100):
         lines.append(f.readline())
 
     ten_lines = ''.join([x.strip() for x in lines])
     first_o = ten_lines.find("O")
     first_n = ten_lines.find("N")
-    end_of_first_snp = min(first_o, first_n)
+    # if both are not -1, take min
+    if first_o != -1 and first_n != -1:
+        end_of_first_snp = min(first_o, first_n)
+    elif first_o != -1:
+        end_of_first_snp = first_o
+    else:
+        end_of_first_snp = first_n
+    assert end_of_first_snp != -1
     # snp goes from 1-end of first snp
+    # assume that the first termination character is all X's
     first_x = ten_lines.find("X")
-    first_y = ten_lines.find("Y")
-    start_of_term = min(first_x, first_y)
+    start_of_term = first_x
     ten_lines = ten_lines[start_of_term:]
     next_s = ten_lines.find("S")
     # term goes from 0 to next_s - 1
@@ -329,6 +376,9 @@ if __name__ == "__main__":
     # look at file and figure out how long the snp encoding and termination
     # character encodings are.
     snp_length, termination_length = get_params(filename)
+    print("snp length is", snp_length)
+    print("term length is", termination_length)
+    assert termination_length != -1
 
     # locs is dictionary with start/end indices as keys and path index as
     # values
