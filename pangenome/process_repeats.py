@@ -45,59 +45,72 @@ def get_first_line_length(filename):
     return len(first_line)
 
 
-def process_repeats(repeats, locs, snp_length, k, m, filename,
-                    test=False):
+def get_file_to_write(k, m, test):
+    """Return the file object to write paths."""
     if test:
         file_to_write = "output.k" + k + "." + m + "_test.txt"
     else:
         file_to_write = "output.k" + k + "." + m + ".txt"
     f = open(file_to_write, "w")
+    return f
+
+
+def check_repeats_while_processing(starts, length,
+                                   filename, first_line_length, occ):
+    """Given a set of repeats, check that they all match."""
+    for start in starts[1:]:
+        this_occ, this_one_left, this_one_right = get_occ_from_file(
+            start,
+            length,
+            filename,
+            first_line_length
+        )
+        if this_occ != occ:
+            raise ValueError("Occurrences of a repeat are not equal")
+
+
+def get_path_indices(starts, length, locs, occ):
+    """Get the indices of paths from dictionary locs that are involved in this
+    repeat"""
+    indices = []
+    for start in starts:
+        end = start + length - 1
+        for key in locs:
+            if start >= key[0] and end <= key[1]:
+                name = locs[key]
+        indices.append(str(name))
+    return indices
+
+
+def process_repeats(repeats, locs, snp_length, k, m, filename,
+                    test=False):
+
+    f = get_file_to_write(k, m, test)
     first_line_length = get_first_line_length(filename)
     for repeat in repeats:
         starts = repeat[0]
         length = repeat[1]
-        print("Length of this repeat is {}".format(length))
         start = starts[0]
+        print("Length of this repeat is {}".format(length))
+        print("-----Processing repeats at starts {}".format(starts))
         occ, one_left, one_right = get_occ_from_file(
             start,
             length,
             filename,
             first_line_length
         )
-        one_lefts = set(one_left)
-        one_rights = set(one_right)
-        print("-----Processing repeats at starts {}".format(starts))
-        for start in starts[1:]:
-            # if there are three or more occurrences, we only need one mismatch
-            # on right and left.
-            this_occ, this_one_left, this_one_right = get_occ_from_file(
-                start,
-                length,
-                filename,
-                first_line_length
-            )
+        # check that these repeats are all valid
+        check_repeats_while_processing(
+            starts,
+            length,
+            filename,
+            first_line_length,
+            occ
+        )
 
-            one_lefts.add(this_one_left)
-            one_rights.add(this_one_right)
-            if this_occ != occ:
-                raise ValueError("Occurrences of a repeat are not equal")
-        # since we crop the repeats to include snp characters only, these
-        # repeats need not be left and right maximal.
-        # if len(one_lefts) == 1:
-        #    raise ValueError("Repeat is not left-maximal")
-        # if len(one_rights) == 1:
-        #    raise ValueError("Repeat is not right-maximal")
-
-        # figure out which paths
-        indices = []
-        for start in starts:
-            end = start + length - 1
-            start_index = occ.find('S')
-            start = start + start_index
-            for key in locs:
-                if start >= key[0] and end <= key[1]:
-                    name = locs[key]
-            indices.append(str(name))
+        # figure out which paths are involved in the repeat
+        indices = get_path_indices(starts, length, locs, occ)
+        # can get duplicates, so check that there are at least two unique
         if len(set(indices)) > 1:
             f.write(" ".join(indices) + "\n")
             print("Paths are:")
@@ -162,7 +175,8 @@ def get_path_locs(TERMINATION_LENGTH, pathlocs_filename):
 
 
 def crop(start, length, filename, first_line_length):
-    """Given a start and length, crop it to include only snps."""
+    """Given a start and length, crop it to include only snps.
+    Will always start with `S`. """
 
     repeat, one_left, one_right = get_occ_from_file(
         start,
@@ -237,6 +251,13 @@ def check_this_match(start1, start2, length, filename, first_line_length):
     assert one_right1 != one_right2
 
 
+def check_start_and_end(repeat1):
+    """We are adding this repeat to the graph, so check that it starts with an
+    S and ends with an N or O."""
+    assert repeat1[0] == "S"
+    assert repeat1[-1] == "N" or repeat1[-1] == "O"
+
+
 def get_repeats(repeats_filename, filename):
     """Use connected components approach to find repeats."""
 
@@ -289,6 +310,7 @@ def get_repeats(repeats_filename, filename):
             g.add_edge(start1, start2, length=length)
             weights.append(length)
             check_repeats(repeat1, repeat2)
+            check_start_and_end(repeat1)
         else:
             # assert that, if this repeat was long, it should have had snps
             if og_length > 50:
