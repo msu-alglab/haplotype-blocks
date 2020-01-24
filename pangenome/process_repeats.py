@@ -82,8 +82,32 @@ def get_path_indices(starts, length, locs, occ):
     return indices
 
 
+def decode_snps(occ):
+    """Given a repeat, decode its A's and C's into the SNP ids."""
+    index = 1
+    occ = occ[index:]
+    snps = []
+    while len(occ) >= snp_length + 1:
+        snp = occ[:snp_length]
+        occ = occ[snp_length:]
+        snp = snp.replace("C", "0")
+        snp = snp.replace("G", "1")
+        snp_id = str(int(snp, 2))
+        state = occ[0]
+        occ = occ[2:]
+        if state == "O":
+            state_out = "0"
+        elif state == "N":
+            state_out = "1"
+        else:
+            raise ValueError("State was not O or N")
+        snps.append(snp_id + ":" + state_out)
+    return snps
+
+
 def process_repeats(repeats, locs, snp_length, k, m, filename,
                     test=False):
+    """Write out repeats in format needed."""
 
     f = get_file_to_write(k, m, test)
     first_line_length = get_first_line_length(filename)
@@ -119,34 +143,11 @@ def process_repeats(repeats, locs, snp_length, k, m, filename,
             print("Only supported by one path")
 
         # figure out which snps
-        start_index = occ.find('S')
-        if start_index == -1:
-            f.write("No SNPS\n")
-        else:
-            index = start_index + 1
-            occ = occ[index:]
-            snps = []
-            if len(occ) < snp_length + 1:
-                f.write("No SNPS\n")
-            while len(occ) >= snp_length + 1:
-                snp = occ[:snp_length]
-                occ = occ[snp_length:]
-                snp = snp.replace("C", "0")
-                snp = snp.replace("G", "1")
-                snp_id = str(int(snp, 2))
-                state = occ[0]
-                occ = occ[2:]
-                if state == "O":
-                    state_out = "0"
-                elif state == "N":
-                    state_out = "1"
-                else:
-                    raise ValueError("State was not O or N")
-                snps.append(snp_id + ":" + state_out)
-            if len(set(indices)) < len(indices):
-                print("Duplicate indices")
-            if len(snps) > 0 and len(set(indices)) > 1:
-                f.write(' '.join(snps) + "\n")
+        snps = decode_snps(occ)
+        if len(set(indices)) < len(indices):
+            print("Duplicate indices")
+        if len(snps) > 0 and len(set(indices)) > 1:
+            f.write(' '.join(snps) + "\n")
     f.close()
 
 
