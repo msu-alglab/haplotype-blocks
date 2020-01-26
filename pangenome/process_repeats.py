@@ -6,6 +6,7 @@ import sys
 def get_occ_from_file(start, length, filename, first_line_length):
     """Look into yeast10.k.fa file for this occurrence and the character
     directly to the left and directly to the right"""
+    # print("In get occ from file.")
     f = open(filename)
     fasta_line_length = 80
     num_linebreaks = start // fasta_line_length
@@ -75,15 +76,21 @@ def get_path_indices(starts, length, locs, occ):
     indices = []
     for start in starts:
         end = start + length - 1
+        # print("start={}, end={}".format(start, end))
+        matching_pathlocs = []
         for key in locs:
             if start >= key[0] and end <= key[1]:
                 name = locs[key]
+                matching_pathlocs.append(locs[key])
+        # assert that exactly one path index matches to this repeat
+        assert len(matching_pathlocs) == 1
         indices.append(str(name))
     return indices
 
 
 def decode_snps(occ):
     """Given a repeat, decode its A's and C's into the SNP ids."""
+    # print("decoding repeat", occ)
     index = 1
     occ = occ[index:]
     snps = []
@@ -101,6 +108,7 @@ def decode_snps(occ):
             state_out = "1"
         else:
             raise ValueError("State was not O or N")
+        # print("processed one snp")
         snps.append(snp_id + ":" + state_out)
     return snps
 
@@ -111,11 +119,13 @@ def process_repeats(repeats, locs, snp_length, k, m, filename,
 
     f = get_file_to_write(k, m, test)
     first_line_length = get_first_line_length(filename)
+
     for repeat in repeats:
+        # get repeat info
         starts = repeat[0]
         length = repeat[1]
         start = starts[0]
-        print("Length of this repeat is {}".format(length))
+        # print("Length of this repeat is {}".format(length))
         print("-----Processing repeats at starts {}".format(starts))
         occ, one_left, one_right = get_occ_from_file(
             start,
@@ -143,6 +153,7 @@ def process_repeats(repeats, locs, snp_length, k, m, filename,
             print("Only supported by one path")
 
         # figure out which snps
+        print("length of this repeat is", length)
         snps = decode_snps(occ)
         if len(set(indices)) < len(indices):
             print("Duplicate indices")
@@ -310,6 +321,7 @@ def get_repeats(repeats_filename, filename):
 
             g.add_edge(start1, start2, length=length)
             weights.append(length)
+            assert length >= snp_length + 2
             check_repeats(repeat1, repeat2)
             check_start_and_end(repeat1)
         else:
