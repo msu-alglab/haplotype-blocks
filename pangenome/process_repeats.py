@@ -3,40 +3,12 @@ import networkx as nx
 import sys
 
 
-def get_occ_from_file(start, length, filename, first_line_length):
-    """Look into yeast10.k.fa file for this occurrence and the character
-    directly to the left and directly to the right"""
-    # print("In get occ from file.")
-    f = open(filename)
-    fasta_line_length = 80
-    num_linebreaks = start // fasta_line_length
-    # print("start=", start)
-    # print("length=", length)
-    # print("first_line_length=", first_line_length)
-    # print("num_linebreaks=", num_linebreaks)
-    start_how_far_into_a_line = (start + num_linebreaks) % (fasta_line_length +
-                                                            1)
-    # print("start_how_far_into_a_line=", start_how_far_into_a_line)
-    repeat_start = first_line_length + num_linebreaks + start
-    # print("repeat_start=", repeat_start)
-    linebreaks_in_repeat = (start_how_far_into_a_line + length) //\
-        fasta_line_length
-    # print("linebreaks_in_repeat=", linebreaks_in_repeat)
-    f.seek(repeat_start)
-    part_of_file = f.read(length + linebreaks_in_repeat)
-    # print("og_occ=", part_of_file)
-    occ = "".join(part_of_file.split("\n"))
-    # check whether the character before this is a linebreak
-    if start % fasta_line_length == 0:
-        # if it is, go back two
-        f.seek(repeat_start - 2)
-    else:
-        # otherwise, just go back one
-        f.seek(repeat_start - 1)
-    one_lefts = f.read(1)
-    f.seek(repeat_start + length + linebreaks_in_repeat)
-    one_rights = f.read(1)
-    return occ, one_lefts, one_rights
+def get_occ_from_long_string(start, length):
+    """Look at long string and get occurrence."""
+    occ = long_string[start:start + length]
+    one_right = long_string[start - 1: start]
+    one_left = long_string[start + length:start + length + 1]
+    return occ, one_right, one_left
 
 
 def get_first_line_length(filename):
@@ -60,11 +32,9 @@ def check_repeats_while_processing(starts, length,
                                    filename, first_line_length, occ):
     """Given a set of repeats, check that they all match."""
     for start in starts[1:]:
-        this_occ, this_one_left, this_one_right = get_occ_from_file(
+        this_occ, this_one_left, this_one_right = get_occ_from_long_string(
             start,
-            length,
-            filename,
-            first_line_length
+            length
         )
         if this_occ != occ:
             raise ValueError("Occurrences of a repeat are not equal")
@@ -127,12 +97,7 @@ def process_repeats(repeats, locs, snp_length, k, m, filename,
         start = starts[0]
         # print("Length of this repeat is {}".format(length))
         print("-----Processing repeats at starts {}".format(starts))
-        occ, one_left, one_right = get_occ_from_file(
-            start,
-            length,
-            filename,
-            first_line_length
-        )
+        occ, one_left, one_right = get_occ_from_long_string(start, length)
         # check that these repeats are all valid
         check_repeats_while_processing(
             starts,
@@ -189,13 +154,7 @@ def get_path_locs(TERMINATION_LENGTH, pathlocs_filename):
 def crop(start, length, filename, first_line_length):
     """Given a start and length, crop it to include only snps.
     Will always start with `S`. """
-
-    repeat, one_left, one_right = get_occ_from_file(
-        start,
-        length,
-        filename,
-        first_line_length
-    )
+    repeat, one_left, one_right = get_occ_from_long_string(start, length)
 
     first_s = repeat.find("S")
     crop_start = first_s
@@ -243,19 +202,10 @@ def check_repeats(repeat1, repeat2):
 def check_this_match(start1, start2, length, filename, first_line_length):
     """Assert that this mummer match is equal and is right and left maximal."""
     # print("getting repeat1")
-    repeat1, one_left1, one_right1 = get_occ_from_file(
-        start1,
-        length,
-        filename,
-        first_line_length
-    )
+    repeat1, one_left1, one_right1 = get_occ_from_long_string(start1, length)
+
     # print("getting repeat2")
-    repeat2, one_left2, one_right2 = get_occ_from_file(
-        start2,
-        length,
-        filename,
-        first_line_length
-    )
+    repeat2, one_left2, one_right2 = get_occ_from_long_string(start2, length)
     # print("repeat1=", repeat1)
     # print("repeat2=", repeat2)
     assert repeat1 == repeat2
@@ -306,18 +256,8 @@ def get_repeats(repeats_filename, filename):
 
         # if the cropped version actually contains SNPs, add to graph
         if crop_start > -1 and length > 0:
-            repeat1, l, r = get_occ_from_file(
-                start1,
-                length,
-                filename,
-                first_line_length
-            )
-            repeat2, l, r = get_occ_from_file(
-                start2,
-                length,
-                filename,
-                first_line_length
-            )
+            repeat1, l, r = get_occ_from_long_string(start1, length)
+            repeat2, l, r = get_occ_from_long_string(start2, length)
 
             g.add_edge(start1, start2, length=length)
             weights.append(length)
@@ -395,6 +335,17 @@ def get_params(filename):
     return (end_of_first_snp - 1, next_s)
 
 
+def get_long_string(filename):
+    """Read in yeast10.k.fa file and get a long string of the contents."""
+    f = open(filename)
+    # get rid of header line
+    f.readline()
+    long_string = ""
+    for line in f:
+        long_string += line[:-1]
+    return long_string
+
+
 if __name__ == "__main__":
     # start timer
     start_time = time.time()
@@ -414,6 +365,8 @@ if __name__ == "__main__":
     print("snp length is", snp_length)
     print("term length is", termination_length)
     assert termination_length != -1
+
+    long_string = get_long_string(filename)
 
     # locs is dictionary with start/end indices as keys and path index as
     # values
