@@ -350,31 +350,31 @@ if __name__ == "__main__":
     # start timer
     start_time = time.time()
 
-    # read in k and min repeat length, which will help us build the filenames
-    k = sys.argv[1]             # k from de bruijn graph
-    min_length = sys.argv[2]    # minimum repeat length found by mummer
+    # mummer filename and repeats filename from input
+    mummer_filename = sys.argv[1]
+    repeats_filename = sys.argv[2]
+    k = mummer_filename.split(".")[1][1:]
+    min_length = repeats_filename.split(".")[2]
 
-    # expected filenames
-    filename = "yeast10.k" + k + ".fa"
-    repeats_filename = "repeats.k" + k + "." + min_length + ".txt"
-    pathlocs_filename = "pathlocs.k" + k + ".txt"
+    # assume pathlocs filename follows same form as mummer filename
+    pathlocs_filename = mummer_filename.split("mummer")[0] + "pathlocs.txt"
 
     # look at file and figure out how long the snp encoding and termination
     # character encodings are.
-    snp_length, termination_length = get_params(filename)
+    snp_length, termination_length = get_params(mummer_filename)
     print("snp length is", snp_length)
     print("term length is", termination_length)
     assert termination_length != -1
 
-    long_string = get_long_string(filename)
+    long_string = get_long_string(mummer_filename)
 
     # locs is dictionary with start/end indices as keys and path index as
     # values
     locs = get_path_locs(termination_length, pathlocs_filename)
 
     # look at the repeats file and find sets of repeats
-    repeats = get_repeats(repeats_filename, filename)
+    repeats = get_repeats(repeats_filename, mummer_filename)
 
     process_repeats(repeats, locs, snp_length, k, min_length,
-                    filename)
+                    mummer_filename)
     print("--- %s seconds ---" % (time.time() - start_time))
