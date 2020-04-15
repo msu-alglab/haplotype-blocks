@@ -1,6 +1,6 @@
 import time
 import sys
-from hapBlocks.blocks import PanBlocks
+from hapBlocks.panBlocks import PanBlocks
 
 
 if __name__ == "__main__":
@@ -14,8 +14,13 @@ if __name__ == "__main__":
     k = mummer_filename.split(".")[1][1:]
     min_length = repeats_filename.split(".")[2]
 
+    # create PanBlocks object and compute blocks
     b = PanBlocks(mummer_filename, repeats_filename)
     b.get_repeats()
     b.compute_blocks()
     b.write_blocks_to_file("output_file.txt")
+
+    # compute selection coefficients
+    b.compute_selection_coefficients()
+
     print("--- %s seconds ---" % (time.time() - start_time))

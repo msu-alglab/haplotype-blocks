@@ -1,6 +1,22 @@
 import networkx as nx
 
 
+class Block:
+
+    def __init__(self, snps, paths):
+        self.snps = snps
+        self.paths = paths
+
+    def write_to_file(self, f):
+        """Write this block's info to passed file."""
+        f.write(" ".join(self.snps) + "\n")
+        f.write(" ".join(self.snps) + "\n")
+
+    def compute_selection_coefficient(self, k):
+        """Compute the selection coefficient for this block."""
+        self.selection_coefficient = len(self.snps) / k
+
+
 def check_start_and_end(repeat1):
     """We are adding this repeat to the graph, so check that it starts with an
     S and ends with an N or O."""
@@ -54,6 +70,7 @@ class PanBlocks:
         assert self.termination_length != 1
         self.get_long_string()
         self.get_path_locs()
+        self.get_decoded_paths()
 
     def get_mummer_params(self):
         """Look at .fa file to figure out the length of the snp encoding and the
@@ -124,8 +141,7 @@ class PanBlocks:
         """Print out the blocks."""
         f = open(filename, "w")
         for block in self.blocks:
-            f.write(" ".join(block[1]) + "\n")
-            f.write(" ".join(block[0]) + "\n")
+            block.write_to_file(f)
         f.close()
 
     def get_repeats(self):
@@ -270,7 +286,7 @@ class PanBlocks:
             # figure out which snps
             snps = self.decode_snps(occ)
             if len(snps) > 0 and len(set(indices)) > 1:
-                self.blocks.append([snps, list(set(indices))])
+                self.blocks.append(Block(snps, list(set(indices))))
 
     def check_repeats_while_processing(self, starts, length, occ):
         """Given a set of repeats, check that they all match."""
@@ -320,3 +336,46 @@ class PanBlocks:
             # print("processed one snp")
             snps.append(snp_id + ":" + state_out)
         return snps
+
+    def get_decoded_paths(self):
+        """Decode paths from long string."""
+        long_string_copy = self.mummer_file_string
+        paths = []
+        while len(long_string_copy) > 0:
+            snps = []
+            long_string_copy = long_string_copy[1:]
+            while long_string_copy[0] != 'X' \
+                    and long_string_copy[0] != 'Y':
+                # move forward one to account for strt char
+                snp = long_string_copy[:self.snp_length]
+                long_string_copy = long_string_copy[self.snp_length:]
+                snp = snp.replace("C", "0")
+                snp = snp.replace("G", "1")
+                snp_id = str(int(snp, 2))
+                snps.append(snp_id)
+                # move forward two to account for SNP call and start char
+                long_string_copy = long_string_copy[2:]
+            # move forward to next snp
+            long_string_copy = long_string_copy[self.termination_length - 1:]
+            paths.append(snps)
+        self.decoded_paths = paths
+
+    def compute_k(self, snps):
+        """For a list of SNPs, compute the number of paths including this
+        list."""
+        count = 0
+        for path in self.decoded_paths:
+            if ''.join(snps) in ''.join(path):
+                count += 1
+        return count
+
+    def compute_selection_coefficients(self):
+        """Compute the selection coefficient for each block."""
+        # print("Computing k values...")
+        for block in self.blocks:
+            snps = block.snps
+            snps = [x[:-2] for x in snps]
+            # print("--Processing block with snps {}".format(snps))
+            k = self.compute_k(snps)
+            # print("k=", k)
+            block.compute_selection_coefficient(k)
