@@ -3,18 +3,29 @@ import networkx as nx
 
 class Block:
 
-    def __init__(self, snps, paths):
+    def __init__(self, snps, paths, pathnames):
         self.snps = snps
         self.paths = paths
+        self.pathnames = pathnames
 
     def write_to_file(self, f):
         """Write this block's info to passed file."""
-        f.write(" ".join(self.snps) + "\n")
+        f.write(" ".join(self.paths) + "\n")
         f.write(" ".join(self.snps) + "\n")
 
     def compute_selection_coefficient(self, k):
         """Compute the selection coefficient for this block."""
         self.selection_coefficient = len(self.snps) / k
+
+    def compute_recombination_frequency(self, method=None):
+        """Compute the recombination frequency for this block."""
+        # viruses do not reproduce sexually, so I'm setting this to 0 for now.
+        if method is None:
+            # no recombination
+            self.r = 0
+        elif method == "distance":
+            # compute recombination factor based on number nucleotides
+            pass
 
 
 def check_start_and_end(repeat1):
@@ -66,11 +77,17 @@ class PanBlocks:
         self.min_length = repeats_filename.split(".")[2]
         self.pathlocs_filename = mummer_filename.split("mummer")[0] +\
             "pathlocs.txt"
+        self.path_filename = mummer_filename.split("mummer")[0] +\
+            "paths.txt"
+        self.get_path_info()
+        keys = list(self.path_info.keys())
+        key = keys[0]
+        print(self.path_info[key])
         self.get_mummer_params()
         assert self.termination_length != 1
         self.get_long_string()
         self.get_path_locs()
-        self.get_decoded_paths()
+        # self.get_decoded_paths()
 
     def get_mummer_params(self):
         """Look at .fa file to figure out the length of the snp encoding and the
@@ -115,15 +132,17 @@ class PanBlocks:
         self.mummer_file_string = long_string
 
     def get_path_locs(self):
-        """Get a dictionary of start/end positions to path ids"""
+        """Get a dictionary of start/end positions to path ids, and a separate
+        dictionary of start/end positions to names."""
         f = open(self.pathlocs_filename)
         lines = f.readlines()
         locs = dict()
+        names = dict()
         counter = 0
         index = 0
         for line in lines:
             if counter == 0:
-                # name = line.strip()
+                name = line.strip()
                 pass
             elif counter == 1:
                 start = int(line.strip()) - 1
@@ -132,10 +151,12 @@ class PanBlocks:
                 # extend end to term length + 1
                 end += self.termination_length
                 locs[(start, end)] = index
+                names[(start, end)] = name
                 index += 1
             counter += 1
             counter = counter % 3
         self.locs = locs
+        self.pathnames = names
 
     def write_blocks_to_file(self, filename):
         """Print out the blocks."""
@@ -265,6 +286,31 @@ class PanBlocks:
             crop_end = len(repeat) - last_o_or_n - 1
         return (crop_start, crop_end)
 
+    def get_path_info(self):
+        """Use the path file to get dictionaries from names to
+        snps/positions."""
+        f = open(self.path_filename)
+        counter = 0
+        self.path_info = dict()
+        for line in f:
+            if counter == 0:
+                # name of path
+                name = line.strip()
+            elif counter == 1:
+                # snps in path
+                snps = line.strip().split()
+            elif counter == 2:
+                # start positions of snps
+                positions = [int(x) for x in line.strip().split()]
+                self.path_info[name] = (snps, positions)
+            counter += 1
+            counter = counter % 3
+
+    def get_position(self, name, snps):
+        """For a given path and set of snps, return the genetic positions at
+        the start and end fo the set of snps, based on the path."""
+        return (1, 1)
+
     def compute_blocks(self, test=False):
         """Put repeats into MPPHB form."""
         self.blocks = []
@@ -281,12 +327,15 @@ class PanBlocks:
             # check that these repeats are all valid
             self.check_repeats_while_processing(starts, length, occ)
             # figure out which paths are involved in the repeat
-            indices = self.get_path_indices(starts, length, occ)
-
+            indices, names = self.get_path_indices_and_names(starts,
+                                                             length, occ)
             # figure out which snps
             snps = self.decode_snps(occ)
+            # figure out the location on the genome of the first and last snp
+            gen_pos1, gen_pos2 = self.get_position(names[0], snps)
             if len(snps) > 0 and len(set(indices)) > 1:
-                self.blocks.append(Block(snps, list(set(indices))))
+                self.blocks.append(Block(snps, list(set(indices)),
+                                         list(set(names))))
 
     def check_repeats_while_processing(self, starts, length, occ):
         """Given a set of repeats, check that they all match."""
@@ -296,22 +345,25 @@ class PanBlocks:
             if this_occ != occ:
                 raise ValueError("Occurrences of a repeat are not equal")
 
-    def get_path_indices(self, starts, length, occ):
+    def get_path_indices_and_names(self, starts, length, occ):
         """Get the indices of paths from dictionary locs that are involved in this
         repeat"""
         indices = []
+        names = []
         for start in starts:
             end = start + length - 1
             # print("start={}, end={}".format(start, end))
             matching_pathlocs = []
             for key in self.locs:
                 if start >= key[0] and end <= key[1]:
-                    name = self.locs[key]
+                    index = self.locs[key]
+                    name = self.pathnames[key]
                     matching_pathlocs.append(self.locs[key])
             # assert that exactly one path index matches to this repeat
             assert len(matching_pathlocs) == 1
-            indices.append(str(name))
-        return indices
+            indices.append(str(index))
+            names.append(name)
+        return (indices, names)
 
     def decode_snps(self, occ):
         """Given a repeat, decode its A's and C's into the SNP ids."""
