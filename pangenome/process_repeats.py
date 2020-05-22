@@ -21,6 +21,6 @@ if __name__ == "__main__":
     b.write_blocks_to_file("output_file.txt")
 
     # compute selection coefficients
-    b.compute_selection_coefficients()
+    # b.compute_selection_coefficients()
 
     print("--- %s seconds ---" % (time.time() - start_time))
