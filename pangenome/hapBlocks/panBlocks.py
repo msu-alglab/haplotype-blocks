@@ -2,6 +2,9 @@ import networkx as nx
 
 
 class Block:
+    """A Block object contains the SNP nodes (ID and 0/1), paths (by both ID
+    and name) for a maximal pangenome haplotype block. Based on this
+    information, it can compute the selection coefficient."""
 
     def __init__(self, snps, paths, pathnames):
         self.snps = snps
@@ -68,24 +71,52 @@ def check_repeats(repeat1, repeat2):
 
 
 class PanBlocks:
+    """A PanBlocks object builds up and holds Block objects.
+    It needs a mummer repeats file, a mummer-encoded fasta file, a pathlocs
+    file, and a paths file.
+
+    Attributes:
+    * mummer_filename
+    * repeats_filename
+    * pathlocs_filename
+    * path_filename
+    * k
+    * min_length
+    * path_info: dictionary mapping from name of path (name of sample) to the
+    SNP nodes in the path and the nucleotide positions of those SNP nodes on
+    the genome
+    * snp_length: length of snp encoding in mummer file
+    * termination_length: length of termination character encoding in mummer
+    file
+    * mummer_file_string: a string containing the contents of the
+    mummer-encoded fasta file of paths through the SNP graph
+    * locs: a dictionary from start/end position to path ids
+    * pathnames: a dictionary from start/end positions to path names
+    """
 
     def __init__(self, mummer_filename, repeats_filename):
-        # set filenames, k, and min length
+        # set filenames from input
         self.mummer_filename = mummer_filename
         self.repeats_filename = repeats_filename
-        self.k = mummer_filename.split(".")[1][1:]
-        self.min_length = repeats_filename.split(".")[2]
+        # infer pathlocs and path filenames from mummer filename
         self.pathlocs_filename = mummer_filename.split("mummer")[0] +\
             "pathlocs.txt"
         self.path_filename = mummer_filename.split("mummer")[0] +\
             "paths.txt"
+        # infer k (de bruijn graph parameter) and repeat length from filenames
+        self.k = mummer_filename.split(".")[1][1:]
+        self.min_length = repeats_filename.split(".")[2]
+        # get path info from pathlocs and path files
         self.get_path_info()
-        keys = list(self.path_info.keys())
-        key = keys[0]
-        print(self.path_info[key])
+        # get snp length and termination length in mummer encoding from mummer
+        # file
         self.get_mummer_params()
         assert self.termination_length != 1
+        # get a long string of the mu mmer-encoded fasta file of paths through
+        # SNP graph
         self.get_long_string()
+        # get two dictionaries: one from start/end position to path ids and one
+        # from start/end position to path names
         self.get_path_locs()
         # self.get_decoded_paths()
 
@@ -122,7 +153,8 @@ class PanBlocks:
         self.termination_length = next_s
 
     def get_long_string(self):
-        """Read in yeast10.k.fa file and get a long string of the contents."""
+        """Read in mummer-encoded fasta file and get a long string of the
+        contents."""
         f = open(self.mummer_filename)
         # get rid of header line
         f.readline()
