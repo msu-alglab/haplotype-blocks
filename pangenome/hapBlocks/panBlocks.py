@@ -1,15 +1,27 @@
 import networkx as nx
+import math
 
 
 class Block:
     """A Block object contains the SNP nodes (ID and 0/1), paths (by both ID
     and name) for a maximal pangenome haplotype block. Based on this
-    information, it can compute the selection coefficient."""
+    information, it can compute the selection coefficient.
 
-    def __init__(self, snps, paths, pathnames):
+    Attributes:
+    * snps: the snps involved in this block
+    * paths: the path ids of this block
+    * pathnames: the path names of this block
+    * length: length along the genome of this block
+    * genome_length: total genome length for this species
+    """
+
+    def __init__(self, snps, paths, pathnames, length, genome_length):
         self.snps = snps
         self.paths = paths
         self.pathnames = pathnames
+        self.length = length
+        self.genome_length = genome_length
+        self.compute_recombination_frequency(method="distance")
 
     def write_to_file(self, f):
         """Write this block's info to passed file."""
@@ -22,13 +34,15 @@ class Block:
 
     def compute_recombination_frequency(self, method=None):
         """Compute the recombination frequency for this block."""
-        # viruses do not reproduce sexually, so I'm setting this to 0 for now.
+        # if method is None, we assume there is no recombination and set r to 0
         if method is None:
             # no recombination
             self.r = 0
         elif method == "distance":
-            # compute recombination factor based on number nucleotides
-            pass
+            # compute recombination factor based on number nucleotide between
+            # start and end of this block.
+            # TODO: choose principled denominator value
+            self.r = (1 - math.exp(-self.length/20000)) / 2
 
 
 def check_start_and_end(repeat1):
@@ -92,6 +106,7 @@ class PanBlocks:
     mummer-encoded fasta file of paths through the SNP graph
     * locs: a dictionary from start/end position to path ids
     * pathnames: a dictionary from start/end positions to path names
+    * genome_length: length of genome for this organism
     """
 
     def __init__(self, mummer_filename, repeats_filename):
@@ -107,6 +122,7 @@ class PanBlocks:
         self.k = mummer_filename.split(".")[1][1:]
         self.min_length = repeats_filename.split(".")[2]
         # get path info from pathlocs and path files
+        # also get genome length
         self.get_path_info()
         # get snp length and termination length in mummer encoding from mummer
         # file
@@ -323,6 +339,7 @@ class PanBlocks:
         snps/positions."""
         f = open(self.path_filename)
         counter = 0
+        overall_max_position = 0
         self.path_info = dict()
         for line in f:
             if counter == 0:
@@ -334,14 +351,26 @@ class PanBlocks:
             elif counter == 2:
                 # start positions of snps
                 positions = [int(x) for x in line.strip().split()]
+                max_pos = positions[-1]
+                if max_pos > overall_max_position:
+                    overall_max_position = max_pos
                 self.path_info[name] = (snps, positions)
             counter += 1
             counter = counter % 3
+        self.genome_length = overall_max_position
 
     def get_position(self, name, snps):
         """For a given path and set of snps, return the genetic positions at
-        the start and end fo the set of snps, based on the path."""
-        return (1, 1)
+        the start and end of the set of snps, based on the path."""
+        # name is the name of one of the paths with this block. snps is the
+        # snps in the block.
+        # need to look up the positions from path_info dict
+        info = self.path_info[name]
+        path_snps = info[0]
+        index = path_snps.index(snps[0])
+        start_position = info[1][index]
+        end_position = info[1][index + len(snps) - 1]
+        return (start_position, end_position)
 
     def compute_blocks(self, test=False):
         """Put repeats into MPPHB form."""
@@ -365,9 +394,15 @@ class PanBlocks:
             snps = self.decode_snps(occ)
             # figure out the location on the genome of the first and last snp
             gen_pos1, gen_pos2 = self.get_position(names[0], snps)
+            distance = gen_pos2 - gen_pos1
             if len(snps) > 0 and len(set(indices)) > 1:
-                self.blocks.append(Block(snps, list(set(indices)),
-                                         list(set(names))))
+                self.blocks.append(Block(snps,
+                                         list(set(indices)),
+                                         list(set(names)),
+                                         distance,
+                                         self.genome_length
+                                         )
+                                   )
 
     def check_repeats_while_processing(self, starts, length, occ):
         """Given a set of repeats, check that they all match."""
