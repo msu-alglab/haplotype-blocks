@@ -22,6 +22,7 @@ class Block:
         self.length = length
         self.genome_length = genome_length
         self.compute_recombination_frequency(method="distance")
+        self.y_0 = 0.00005  # as in Cunha et al.
 
     def write_to_file(self, f):
         """Write this block's info to passed file."""
@@ -29,8 +30,30 @@ class Block:
         f.write(" ".join(self.snps) + "\n")
 
     def compute_selection_coefficient(self, k):
-        """Compute the selection coefficient for this block."""
-        self.selection_coefficient = len(self.snps) / k
+        """Compute the selection coefficient for this block.
+        Use Equation 5 from Cunha et al."""
+        num_s_to_test = 10
+        s_to_test = [x/num_s_to_test for x in range(num_s_to_test + 1)][1:]
+        y_t = len(self.paths) / k
+        max_likelihood = -1
+        best_s = -1
+        print("Computing selection coefficient for block.")
+        if y_t < 1:
+            for s in s_to_test:
+                t = (1/s) * math.log((y_t*(1 - self.y_0))/(self.y_0*(1 - y_t)))
+                summand_1 = -self.r * t
+                summand_2 = (self.r/s)*math.log(1-self.y_0*(1-math.e**(s*t)))
+                summand_3 = math.log(t-(1/2)*math.log(
+                    -self.y_0*(1-math.e**(s*t))))
+                likelihood = summand_1 + summand_2 + summand_3
+                if likelihood > max_likelihood:
+                    max_likelihood = likelihood
+                    best_s = s
+            self.selection_coefficient = best_s
+            print("s=", self.selection_coefficient)
+        else:
+            print("y_t is 1, so skipping and setting s to 0")
+            self.selection_coefficient = 0
 
     def compute_recombination_frequency(self, method=None):
         """Compute the recombination frequency for this block."""
@@ -124,6 +147,8 @@ class PanBlocks:
         # get path info from pathlocs and path files
         # also get genome length
         self.get_path_info()
+        # set all_paths from path_info
+        self.all_paths = [x[0] for x in self.path_info.values()]
         # get snp length and termination length in mummer encoding from mummer
         # file
         self.get_mummer_params()
@@ -134,7 +159,6 @@ class PanBlocks:
         # get two dictionaries: one from start/end position to path ids and one
         # from start/end position to path names
         self.get_path_locs()
-        # self.get_decoded_paths()
 
     def get_mummer_params(self):
         """Look at .fa file to figure out the length of the snp encoding and the
@@ -456,35 +480,17 @@ class PanBlocks:
             snps.append(snp_id + ":" + state_out)
         return snps
 
-    def get_decoded_paths(self):
-        """Decode paths from long string."""
-        long_string_copy = self.mummer_file_string
-        paths = []
-        while len(long_string_copy) > 0:
-            snps = []
-            long_string_copy = long_string_copy[1:]
-            while long_string_copy[0] != 'X' \
-                    and long_string_copy[0] != 'Y':
-                # move forward one to account for strt char
-                snp = long_string_copy[:self.snp_length]
-                long_string_copy = long_string_copy[self.snp_length:]
-                snp = snp.replace("C", "0")
-                snp = snp.replace("G", "1")
-                snp_id = str(int(snp, 2))
-                snps.append(snp_id)
-                # move forward two to account for SNP call and start char
-                long_string_copy = long_string_copy[2:]
-            # move forward to next snp
-            long_string_copy = long_string_copy[self.termination_length - 1:]
-            paths.append(snps)
-        self.decoded_paths = paths
-
     def compute_k(self, snps):
         """For a list of SNPs, compute the number of paths including this
         list."""
+        # TODO: make this more efficient
         count = 0
-        for path in self.decoded_paths:
-            if ''.join(snps) in ''.join(path):
+        snps_as_string = ' '.join(snps)
+        for path in self.all_paths:
+            # strip off 0/1 value of snp
+            path = [x[:-2] for x in path]
+            path_as_string = ' '.join(path)
+            if snps_as_string in path_as_string:
                 count += 1
         return count
 
@@ -496,5 +502,4 @@ class PanBlocks:
             snps = [x[:-2] for x in snps]
             # print("--Processing block with snps {}".format(snps))
             k = self.compute_k(snps)
-            # print("k=", k)
             block.compute_selection_coefficient(k)
