@@ -23,4 +23,7 @@ if __name__ == "__main__":
     # compute selection coefficients
     b.compute_selection_coefficients()
 
+    print("Found {} blocks".format(b.get_num_blocks()))
+    b.plot_snps_vs_paths_scatter()
+
     print("--- %s seconds ---" % (time.time() - start_time))

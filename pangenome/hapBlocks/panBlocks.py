@@ -1,5 +1,7 @@
 import networkx as nx
 import math
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Block:
@@ -24,6 +26,14 @@ class Block:
         self.compute_recombination_frequency(method="distance")
         self.y_0 = 0.00005  # as in Cunha et al.
 
+    def __str__(self):
+        """Return a string representation of |K|
+        and number snps in this block"""
+        return "|K|={}, num snps={}".format(
+            len(self.paths),
+            len(self.snps)
+        )
+
     def write_to_file(self, f):
         """Write this block's info to passed file."""
         f.write(" ".join(self.paths) + "\n")
@@ -37,7 +47,7 @@ class Block:
         y_t = len(self.paths) / k
         max_likelihood = -1
         best_s = -1
-        print("Computing selection coefficient for block.")
+        # print("Computing selection coefficient for block.")
         if y_t < 1:
             for s in s_to_test:
                 t = (1/s) * math.log((y_t*(1 - self.y_0))/(self.y_0*(1 - y_t)))
@@ -50,9 +60,9 @@ class Block:
                     max_likelihood = likelihood
                     best_s = s
             self.selection_coefficient = best_s
-            print("s=", self.selection_coefficient)
+            # print("s=", self.selection_coefficient)
         else:
-            print("y_t is 1, so skipping and setting s to 0")
+            # print("y_t is 1, so skipping and setting s to 0")
             self.selection_coefficient = 0
 
     def compute_recombination_frequency(self, method=None):
@@ -142,6 +152,7 @@ class PanBlocks:
         self.path_filename = mummer_filename.split("mummer")[0] +\
             "paths.txt"
         # infer k (de bruijn graph parameter) and repeat length from filenames
+        # TODO: filenames are not consistent. this is broken.
         self.k = mummer_filename.split(".")[1][1:]
         self.min_length = repeats_filename.split(".")[2]
         # get path info from pathlocs and path files
@@ -159,6 +170,13 @@ class PanBlocks:
         # get two dictionaries: one from start/end position to path ids and one
         # from start/end position to path names
         self.get_path_locs()
+
+    def get_blocks(self):
+        """Return a list of all blocks in this PanBlocks object."""
+        return self.blocks
+
+    def get_num_blocks(self):
+        return len(self.blocks)
 
     def get_mummer_params(self):
         """Look at .fa file to figure out the length of the snp encoding and the
@@ -503,3 +521,24 @@ class PanBlocks:
             # print("--Processing block with snps {}".format(snps))
             k = self.compute_k(snps)
             block.compute_selection_coefficient(k)
+
+    def plot_snps_vs_paths_scatter(self, filename=None):
+        """Create a scatterplot of all blocks in PanBlocks object,
+        with number of paths on the x axis and number of snps on the y axis"""
+        # if no filename provided, write to wherever the mummer file is
+        if filename is None:
+            filename = self.mummer_filename + "scatterplot.pdf"
+        # x values are number of paths in the block, y are number of snps
+        x = np.empty(self.get_num_blocks())
+        y = np.empty(self.get_num_blocks())
+        for i, block in enumerate(self.get_blocks()):
+            x[i] = len(block.snps)
+            y[i] = len(block.paths)
+        plt.scatter(x, y, c="red", alpha=0.5, label="k={}".format(19))
+        plt.xlabel("Number of paths")
+        plt.ylabel("Number of SNPs")
+        plt.legend()
+        # set title to mummer filename. TODO: better title
+        plt.title(self.mummer_filename)
+        print("Saving scatterplot as {}".format(filename))
+        plt.savefig(filename)
