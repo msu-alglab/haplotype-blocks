@@ -116,3 +116,4 @@ block*.txt
 wildcard/*.txt
 pangenome/covid19/
 pangenome/covid19-0.05p/
+pangenome/*.dot
