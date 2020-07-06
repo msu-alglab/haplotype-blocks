@@ -115,3 +115,4 @@ block*.txt
 # wild hap out and test
 wildcard/*.txt
 pangenome/covid19/
+pangenome/covid19-0.05p/
