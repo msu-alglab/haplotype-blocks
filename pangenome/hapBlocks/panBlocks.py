@@ -5,9 +5,9 @@ import numpy as np
 
 
 class Block:
-    """A Block object contains the SNP nodes (ID and 0/1), paths (by both ID
+    """A Block object contains the SNP nodes (ID and 0/1) and paths (by both ID
     and name) for a maximal pangenome haplotype block. Based on this
-    information, it can compute the selection coefficient.
+    information, it can compute the selection coefficient for each block.
 
     Attributes:
     * snps: the snps involved in this block
@@ -132,6 +132,8 @@ class PanBlocks:
     * path_info: dictionary mapping from name of path (name of sample) to the
     SNP nodes in the path and the nucleotide positions of those SNP nodes on
     the genome
+    * snps: a dictionary from snp nodes (both 1 and 0 versions) to selection
+    coefficients
     * snp_length: length of snp encoding in mummer file
     * termination_length: length of termination character encoding in mummer
     file
@@ -378,11 +380,12 @@ class PanBlocks:
 
     def get_path_info(self):
         """Use the path file to get dictionaries from names to
-        snps/positions."""
+        snps/positions. Also, create a list of all unique snps."""
         f = open(self.path_filename)
         counter = 0
         overall_max_position = 0
         self.path_info = dict()
+        self.snps = dict()
         for line in f:
             if counter == 0:
                 # name of path
@@ -390,6 +393,8 @@ class PanBlocks:
             elif counter == 1:
                 # snps in path
                 snps = line.strip().split()
+                for snp in snps:
+                    self.snps[snp] = 0
             elif counter == 2:
                 # start positions of snps
                 positions = [int(x) for x in line.strip().split()]
@@ -542,3 +547,66 @@ class PanBlocks:
         plt.title(self.mummer_filename)
         print("Saving scatterplot as {}".format(filename))
         plt.savefig(filename)
+
+    def set_selection_coefficients(self):
+        """For each node, figure out what the max selection coefficient is."""
+        # TODO: make this more efficient
+        for snp in self.snps.keys():
+            # get the max selection coeff for this node
+            # print(f"Finding max selection coeff for snp {snp}")
+            max_s = 0
+            for block in self.blocks:
+                if snp in block.snps:
+                    if block.selection_coefficient > max_s:
+                        max_s = block.selection_coefficient
+            self.snps[snp] = max_s
+
+    def print_selection_coefficients(self):
+        """Print out all selection coeffs."""
+        print("Calling print_selection_coefficients")
+        print(self.snps)
+
+    def generate_hists(self):
+        """Make a histogram of selection coeffs by snp and by block"""
+        plt.subplot(211)
+        plt.hist(self.snps.values())
+        plt.subplot(212)
+        # get all selection coeffs from blocks
+        coeffs = []
+        for block in self.blocks:
+            coeffs.append(block.selection_coefficient)
+        plt.hist(coeffs)
+        plt.savefig("snp_selection_coeffs.png")
+
+    def decorate_snp_graph(self, dotfile):
+        f = open(dotfile)
+        out = open(dotfile.split(".")[0] + "_new.dot", "w")
+        print("Editing dotfile")
+        print(self.snps)
+        # add in a color based on selection coeff
+        counter = 0  # assume that the snps are in order in the dotfile
+        one = False
+        for line in f:
+            if "style=dotted" in line:
+                parts = line.split("dotted")
+                side = line.split("label=")[1][1]
+                snp_label = str(counter) + ":" + side
+                selection_coeff = self.snps[snp_label]
+                if snp_label == "278:1":
+                    print("SNP {} has selection coeff {}".format(
+                        snp_label,
+                        selection_coeff))
+                red_val = f"{int(255 - selection_coeff * 255):0>2x}"
+                color = '"#ff' + red_val + red_val + '"'
+                new_line = parts[0] + "filled fillcolor=" +\
+                    color + " color=black" + parts[1]
+                out.write(new_line)
+                print(f"line={line}, snp_label={snp_label}, counter={counter}")
+                print(color)
+                if one:
+                    counter += 1
+                one = not one
+            else:
+                out.write(line)
+        f.close()
+        out.close()

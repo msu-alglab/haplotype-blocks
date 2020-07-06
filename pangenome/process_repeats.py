@@ -27,3 +27,9 @@ if __name__ == "__main__":
     b.plot_snps_vs_paths_scatter()
 
     print("--- %s seconds ---" % (time.time() - start_time))
+
+    # make picture
+    b.set_selection_coefficients()
+    print("Call print_selection_coeffs")
+    b.generate_hists()
+    b.decorate_snp_graph("covid19/dotfiles/pangraph.dot")
