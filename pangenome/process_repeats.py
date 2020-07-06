@@ -20,16 +20,18 @@ if __name__ == "__main__":
     b.compute_blocks()
     b.write_blocks_to_file("output_file.txt")
 
-    # compute selection coefficients
-    b.compute_selection_coefficients()
-
     print("Found {} blocks".format(b.get_num_blocks()))
-    b.plot_snps_vs_paths_scatter()
+    # b.plot_snps_vs_paths_scatter()
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    # make picture
+    # compute selection coeffs and make picture
+    b.compute_selection_coefficients()
     b.set_selection_coefficients()
-    print("Call print_selection_coeffs")
-    b.generate_hists()
-    b.decorate_snp_graph("covid19/dotfiles/pangraph.dot")
+    # b.decorate_snp_graph("covid19/dotfiles/pangraph.dot")
+
+    # generate histograms
+    # b.generate_hists()
+
+    # create dot file
+    b.create_dot_file("snp_graph.dot")

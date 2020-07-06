@@ -134,6 +134,8 @@ class PanBlocks:
     the genome
     * snps: a dictionary from snp nodes (both 1 and 0 versions) to selection
     coefficients
+    * snp_positions: a dictionary from snp nodes (both 1 and 0 vresions) to
+    locations
     * snp_length: length of snp encoding in mummer file
     * termination_length: length of termination character encoding in mummer
     file
@@ -142,6 +144,8 @@ class PanBlocks:
     * locs: a dictionary from start/end position to path ids
     * pathnames: a dictionary from start/end positions to path names
     * genome_length: length of genome for this organism
+    * snp_index_offset: the number of SNPs, which is used for assigning an ID
+    when creating a dotfile.
     """
 
     def __init__(self, mummer_filename, repeats_filename):
@@ -386,6 +390,7 @@ class PanBlocks:
         overall_max_position = 0
         self.path_info = dict()
         self.snps = dict()
+        self.snp_locations = dict()
         for line in f:
             if counter == 0:
                 # name of path
@@ -402,6 +407,8 @@ class PanBlocks:
                 if max_pos > overall_max_position:
                     overall_max_position = max_pos
                 self.path_info[name] = (snps, positions)
+                for (snp, position) in zip(snps, positions):
+                    self.snp_locations[snp] = position
             counter += 1
             counter = counter % 3
         self.genome_length = overall_max_position
@@ -610,3 +617,72 @@ class PanBlocks:
                 out.write(line)
         f.close()
         out.close()
+
+    def write_nodes(self, f):
+        """Write the nodes of the SNP graph dotfile to file object f."""
+        # write subgraph for all SNPs
+        snps = list(set([int(x.split(":")[0]) for x in self.snps.keys()]))
+        self.snp_index_offset = max(snps)
+        for snp in snps:
+            f.write("subgraph cluster_{}".format(snp) +
+                    " { node [style=solid];\n")
+            side_1_id = snp
+            side_0_id = side_1_id + self.snp_index_offset
+            side_1_selection_coeff = self.snps["{}:1".format(snp)]
+            side_0_selection_coeff = self.snps["{}:0".format(snp)]
+            side_1_red_val = f"{int(255 - side_1_selection_coeff * 255):0>2x}"
+            side_0_red_val = f"{int(255 - side_0_selection_coeff * 255):0>2x}"
+            side_1_color = '"#ff' + side_1_red_val + side_1_red_val + '"'
+            side_0_color = '"#ff' + side_0_red_val + side_0_red_val + '"'
+            f.write(
+                '{} [label="1" style=filled'.format(side_1_id) +
+                ' fillcolor={} color=black];\n'.format(side_1_color)
+            )
+            f.write(
+                '{} [label="0" style=filled'.format(side_0_id) +
+                ' fillcolor={} color=black];\n'.format(side_0_color)
+            )
+            position = self.snp_locations[str(snp) + ":0"]
+            f.write('label="SNP {}, Position {}";\n'.format(snp,
+                                                            position))
+            f.write("}\n\n")
+
+    def write_edges(self, f):
+        """Write the edges of the SNP graph dotfile to file object f."""
+        f.write('subgraph base { edge [color="grey"];\n')
+        edges = []
+        for path_info in self.path_info.values():
+            path = path_info[0]
+            node_1 = path[0]
+            snp1 = int(node_1.split(":")[0])
+            side1 = int(node_1.split(":")[1])
+            if side1 == 0:
+                id1 = snp1 + self.snp_index_offset
+            else:
+                id1 = snp1
+            for node in path[1:]:
+                node_2 = node
+                snp2 = int(node_2.split(":")[0])
+                side2 = int(node_2.split(":")[1])
+                if side2 == 0:
+                    id2 = snp2 + self.snp_index_offset
+                else:
+                    id2 = snp2
+                if (id1, id2) not in edges:
+                    edges.append((id1, id2))
+                    f.write("{} -> {}\n".format(id1, id2))
+                id1 = id2
+        f.write('}\n')
+
+    def create_dot_file(self, filename):
+        """Create a dotfile of the SNP graph, where nodes are colored by
+        selection coefficient value."""
+        f = open(filename, "w")
+        # open graph
+        f.write("digraph {\n\n")
+        # write nodes and edges
+        self.write_nodes(f)
+        self.write_edges(f)
+        # close graph
+        f.write("}")
+        f.close()
