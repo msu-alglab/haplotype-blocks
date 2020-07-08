@@ -642,15 +642,13 @@ class PanBlocks:
                 '{} [label="0" style=filled'.format(side_0_id) +
                 ' fillcolor={} color=black];\n'.format(side_0_color)
             )
-            position = self.snp_locations[str(snp) + ":0"]
-            f.write('label="SNP {}, Position {}";\n'.format(snp,
-                                                            position))
             f.write("}\n\n")
 
     def write_edges(self, f):
         """Write the edges of the SNP graph dotfile to file object f."""
         f.write('subgraph base { edge [color="grey"];\n')
         edges = []
+        # TODO: make every path a different color
         for path_info in self.path_info.values():
             path = path_info[0]
             node_1 = path[0]
