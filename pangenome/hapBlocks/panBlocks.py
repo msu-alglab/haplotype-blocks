@@ -546,9 +546,9 @@ class PanBlocks:
         for i, block in enumerate(self.get_blocks()):
             x[i] = len(block.snps)
             y[i] = len(block.paths)
-        plt.scatter(x, y, c="red", alpha=0.5, label="k={}".format(19))
-        plt.xlabel("Number of paths")
-        plt.ylabel("Number of SNPs")
+        plt.scatter(x, y, c="red", alpha=0.5, label="k={}".format(25))
+        plt.xlabel("Number of SNPs")
+        plt.ylabel("Number of paths")
         plt.legend()
         # set title to mummer filename. TODO: better title
         plt.title(self.mummer_filename)
