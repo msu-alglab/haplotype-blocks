@@ -647,12 +647,19 @@ class PanBlocks:
     def write_edges(self, f):
         """Write the edges of the SNP graph dotfile to file object f."""
         f.write('subgraph base {\n')
-        # TODO: make every path a different color
-        colors = ["#a0e3b7", "#1d866d", "#69ef7b", "#22577a", "#35c8ef",
-                  "#5c51b1", "#ca94fd", "#a03cbf", "#5ca0f7", "#4537ff"]
+        # a list of visually different colors. There may not be enough for
+        # every path to be a distinct color.
+        # generated using colorogical: http://vrl.cs.brown.edu/color
+        colors = ["#72e5ef", "#6e3638", "#b3e61c", "#322cbf", "#7b9b47",
+                  "#f90da0", "#47f0a3", "#bf012a", "#65f112", "#d25bfc",
+                  "#096013", "#f7c5f1", "#2aa63a", "#c95e9f", "#c7dd91",
+                  "#8a0458", "#fbbd13", "#657bec", "#f87945", "#2f5672",
+                  "#e7ad79", "#059dc5", "#ac85a3", "#464a15"]
         index = 0
-        for path_info in self.path_info.values():
+        for pathname, path_info in self.path_info.items():
+            # TODO: write out pathname in first edge of path
             path = path_info[0]
+            label = pathname.split("|")[1]
             node_1 = path[0]
             snp1 = int(node_1.split(":")[0])
             side1 = int(node_1.split(":")[1])
@@ -660,6 +667,7 @@ class PanBlocks:
                 id1 = snp1 + self.snp_index_offset
             else:
                 id1 = snp1
+            first_node = True
             for node in path[1:]:
                 node_2 = node
                 snp2 = int(node_2.split(":")[0])
@@ -668,9 +676,18 @@ class PanBlocks:
                     id2 = snp2 + self.snp_index_offset
                 else:
                     id2 = snp2
-                f.write('{} -> {} [color="{}"]\n'.format(id1, id2,
-                                                         colors[index]))
+                # only label first node
+                if first_node:
+                    print("labeling")
+                    f.write(
+                        '{} -> {} [label = "{}" color="{}"]\n'
+                        .format(id1, id2, label, colors[index]))
+                else:
+                    f.write(
+                        '{} -> {} [color="{}"]\n'
+                        .format(id1, id2, colors[index]))
                 id1 = id2
+                first_node = False
             index = (index + 1) % len(colors)
         f.write('}\n')
 
