@@ -1,7 +1,10 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-import panBlocks.block as block
+# TODO: make an actual python package to avoid ugly import like this
+import sys
+sys.path.insert(1, "/home/lucy/haplotype-blocks/pangenome/panBlocks")  # noqa
+import block
 
 
 # functions used in computing all blocks
@@ -183,7 +186,7 @@ class PanBlocks:
 
     def write_blocks_to_file(self, filename):
         """Print out the blocks."""
-        f = open(filename, "w")
+        f = open("outputs/" + filename, "w")
         for b in self.blocks:
             b.write_to_file(f)
         f.close()
@@ -511,6 +514,7 @@ class PanBlocks:
         plt.savefig("snp_selection_coeffs.png")
 
     def decorate_snp_graph(self, dotfile):
+        # TODO: delete this
         f = open(dotfile)
         out = open(dotfile.split(".")[0] + "_new.dot", "w")
         print("Editing dotfile")
@@ -617,7 +621,7 @@ class PanBlocks:
     def create_dot_file(self, filename):
         """Create a dotfile of the SNP graph, where nodes are colored by
         selection coefficient value."""
-        f = open(filename, "w")
+        f = open("outputs/" + filename, "w")
         # open graph
         f.write("digraph {\n\n")
         # write nodes and edges
