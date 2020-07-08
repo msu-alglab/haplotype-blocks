@@ -1,83 +1,10 @@
 import networkx as nx
-import math
 import matplotlib.pyplot as plt
 import numpy as np
+import hapBlocks.block as block
 
 
-class Block:
-    """A Block object contains the SNP nodes (ID and 0/1) and paths (by both ID
-    and name) for a maximal pangenome haplotype block. Based on this
-    information, it can compute the selection coefficient for each block.
-
-    Attributes:
-    * snps: the snps involved in this block
-    * paths: the path ids of this block
-    * pathnames: the path names of this block
-    * length: length along the genome of this block
-    * genome_length: total genome length for this species
-    """
-
-    def __init__(self, snps, paths, pathnames, length, genome_length):
-        self.snps = snps
-        self.paths = paths
-        self.pathnames = pathnames
-        self.length = length
-        self.genome_length = genome_length
-        self.compute_recombination_frequency(method="distance")
-        self.y_0 = 0.00005  # as in Cunha et al.
-
-    def __str__(self):
-        """Return a string representation of |K|
-        and number snps in this block"""
-        return "|K|={}, num snps={}".format(
-            len(self.paths),
-            len(self.snps)
-        )
-
-    def write_to_file(self, f):
-        """Write this block's info to passed file."""
-        f.write(" ".join(self.paths) + "\n")
-        f.write(" ".join(self.snps) + "\n")
-
-    def compute_selection_coefficient(self, k):
-        """Compute the selection coefficient for this block.
-        Use Equation 5 from Cunha et al."""
-        num_s_to_test = 10
-        s_to_test = [x/num_s_to_test for x in range(num_s_to_test + 1)][1:]
-        y_t = len(self.paths) / k
-        max_likelihood = -1
-        best_s = -1
-        # print("Computing selection coefficient for block.")
-        if y_t < 1:
-            for s in s_to_test:
-                t = (1/s) * math.log((y_t*(1 - self.y_0))/(self.y_0*(1 - y_t)))
-                summand_1 = -self.r * t
-                summand_2 = (self.r/s)*math.log(1-self.y_0*(1-math.e**(s*t)))
-                summand_3 = math.log(t-(1/2)*math.log(
-                    -self.y_0*(1-math.e**(s*t))))
-                likelihood = summand_1 + summand_2 + summand_3
-                if likelihood > max_likelihood:
-                    max_likelihood = likelihood
-                    best_s = s
-            self.selection_coefficient = best_s
-            # print("s=", self.selection_coefficient)
-        else:
-            # print("y_t is 1, so skipping and setting s to 0")
-            self.selection_coefficient = 0
-
-    def compute_recombination_frequency(self, method=None):
-        """Compute the recombination frequency for this block."""
-        # if method is None, we assume there is no recombination and set r to 0
-        if method is None:
-            # no recombination
-            self.r = 0
-        elif method == "distance":
-            # compute recombination factor based on number nucleotide between
-            # start and end of this block.
-            # TODO: choose principled denominator value
-            self.r = (1 - math.exp(-self.length/20000)) / 2
-
-
+# functions used in computing all blocks
 def check_start_and_end(repeat1):
     """We are adding this repeat to the graph, so check that it starts with an
     S and ends with an N or O."""
@@ -257,8 +184,8 @@ class PanBlocks:
     def write_blocks_to_file(self, filename):
         """Print out the blocks."""
         f = open(filename, "w")
-        for block in self.blocks:
-            block.write_to_file(f)
+        for b in self.blocks:
+            b.write_to_file(f)
         f.close()
 
     def get_repeats(self):
@@ -450,13 +377,11 @@ class PanBlocks:
             gen_pos1, gen_pos2 = self.get_position(names[0], snps)
             distance = gen_pos2 - gen_pos1
             if len(snps) > 0 and len(set(indices)) > 1:
-                self.blocks.append(Block(snps,
-                                         list(set(indices)),
-                                         list(set(names)),
-                                         distance,
-                                         self.genome_length
-                                         )
-                                   )
+                self.blocks.append(block.Block(snps,
+                                               list(set(indices)),
+                                               list(set(names)),
+                                               distance,
+                                               self.genome_length))
 
     def check_repeats_while_processing(self, starts, length, occ):
         """Given a set of repeats, check that they all match."""
@@ -527,12 +452,12 @@ class PanBlocks:
     def compute_selection_coefficients(self):
         """Compute the selection coefficient for each block."""
         # print("Computing k values...")
-        for block in self.blocks:
-            snps = block.snps
+        for b in self.blocks:
+            snps = b.snps
             snps = [x[:-2] for x in snps]
             # print("--Processing block with snps {}".format(snps))
             k = self.compute_k(snps)
-            block.compute_selection_coefficient(k)
+            b.compute_selection_coefficient(k)
 
     def plot_snps_vs_paths_scatter(self, filename=None):
         """Create a scatterplot of all blocks in PanBlocks object,
@@ -543,9 +468,9 @@ class PanBlocks:
         # x values are number of paths in the block, y are number of snps
         x = np.empty(self.get_num_blocks())
         y = np.empty(self.get_num_blocks())
-        for i, block in enumerate(self.get_blocks()):
-            x[i] = len(block.snps)
-            y[i] = len(block.paths)
+        for i, b in enumerate(self.get_blocks()):
+            x[i] = len(b.snps)
+            y[i] = len(b.paths)
         plt.scatter(x, y, c="red", alpha=0.5, label="k={}".format(25))
         plt.xlabel("Number of SNPs")
         plt.ylabel("Number of paths")
@@ -562,10 +487,10 @@ class PanBlocks:
             # get the max selection coeff for this node
             # print(f"Finding max selection coeff for snp {snp}")
             max_s = 0
-            for block in self.blocks:
-                if snp in block.snps:
-                    if block.selection_coefficient > max_s:
-                        max_s = block.selection_coefficient
+            for b in self.blocks:
+                if snp in b.snps:
+                    if b.selection_coefficient > max_s:
+                        max_s = b.selection_coefficient
             self.snps[snp] = max_s
 
     def print_selection_coefficients(self):
@@ -580,8 +505,8 @@ class PanBlocks:
         plt.subplot(212)
         # get all selection coeffs from blocks
         coeffs = []
-        for block in self.blocks:
-            coeffs.append(block.selection_coefficient)
+        for b in self.blocks:
+            coeffs.append(b.selection_coefficient)
         plt.hist(coeffs)
         plt.savefig("snp_selection_coeffs.png")
 
@@ -642,7 +567,7 @@ class PanBlocks:
                 '{} [label="0" style=filled'.format(side_0_id) +
                 ' fillcolor={} color=black];\n'.format(side_0_color)
             )
-            f.write("}\n\n")
+            f.write('label="SNP {}";\n}}\n\n'.format(snp))
 
     def write_edges(self, f):
         """Write the edges of the SNP graph dotfile to file object f."""
@@ -657,7 +582,6 @@ class PanBlocks:
                   "#e7ad79", "#059dc5", "#ac85a3", "#464a15"]
         index = 0
         for pathname, path_info in self.path_info.items():
-            # TODO: write out pathname in first edge of path
             path = path_info[0]
             label = pathname.split("|")[1]
             node_1 = path[0]
@@ -678,7 +602,6 @@ class PanBlocks:
                     id2 = snp2
                 # only label first node
                 if first_node:
-                    print("labeling")
                     f.write(
                         '{} -> {} [label = "{}" color="{}"]\n'
                         .format(id1, id2, label, colors[index]))
