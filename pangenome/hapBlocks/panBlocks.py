@@ -646,9 +646,11 @@ class PanBlocks:
 
     def write_edges(self, f):
         """Write the edges of the SNP graph dotfile to file object f."""
-        f.write('subgraph base { edge [color="grey"];\n')
-        edges = []
+        f.write('subgraph base {\n')
         # TODO: make every path a different color
+        colors = ["#a0e3b7", "#1d866d", "#69ef7b", "#22577a", "#35c8ef",
+                  "#5c51b1", "#ca94fd", "#a03cbf", "#5ca0f7", "#4537ff"]
+        index = 0
         for path_info in self.path_info.values():
             path = path_info[0]
             node_1 = path[0]
@@ -666,10 +668,10 @@ class PanBlocks:
                     id2 = snp2 + self.snp_index_offset
                 else:
                     id2 = snp2
-                if (id1, id2) not in edges:
-                    edges.append((id1, id2))
-                    f.write("{} -> {}\n".format(id1, id2))
+                f.write('{} -> {} [color="{}"]\n'.format(id1, id2,
+                                                         colors[index]))
                 id1 = id2
+            index = (index + 1) % len(colors)
         f.write('}\n')
 
     def create_dot_file(self, filename):
