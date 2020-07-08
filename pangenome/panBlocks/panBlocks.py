@@ -513,40 +513,6 @@ class PanBlocks:
         plt.hist(coeffs)
         plt.savefig("snp_selection_coeffs.png")
 
-    def decorate_snp_graph(self, dotfile):
-        # TODO: delete this
-        f = open(dotfile)
-        out = open(dotfile.split(".")[0] + "_new.dot", "w")
-        print("Editing dotfile")
-        print(self.snps)
-        # add in a color based on selection coeff
-        counter = 0  # assume that the snps are in order in the dotfile
-        one = False
-        for line in f:
-            if "style=dotted" in line:
-                parts = line.split("dotted")
-                side = line.split("label=")[1][1]
-                snp_label = str(counter) + ":" + side
-                selection_coeff = self.snps[snp_label]
-                if snp_label == "278:1":
-                    print("SNP {} has selection coeff {}".format(
-                        snp_label,
-                        selection_coeff))
-                red_val = f"{int(255 - selection_coeff * 255):0>2x}"
-                color = '"#ff' + red_val + red_val + '"'
-                new_line = parts[0] + "filled fillcolor=" +\
-                    color + " color=black" + parts[1]
-                out.write(new_line)
-                print(f"line={line}, snp_label={snp_label}, counter={counter}")
-                print(color)
-                if one:
-                    counter += 1
-                one = not one
-            else:
-                out.write(line)
-        f.close()
-        out.close()
-
     def write_nodes(self, f):
         """Write the nodes of the SNP graph dotfile to file object f."""
         # write subgraph for all SNPs
