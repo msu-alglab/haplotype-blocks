@@ -1,7 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-import hapBlocks.block as block
+import panBlocks.block as block
 
 
 # functions used in computing all blocks
