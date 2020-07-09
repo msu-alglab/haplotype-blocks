@@ -626,5 +626,15 @@ class PanBlocks:
         """Create a bed file for all high-selection SNPs"""
         f = open("outputs/" + filename, "w")
         for snp in self.snps:
-            print(snp)
+            if self.snps[snp] > 0.1:
+                for path, path_info in self.SARS_COV2_path_info.items():
+                    if snp in path_info[0]:
+                        index = path_info[0].index(snp)
+                        position = path_info[1][index]
+                        f.write("{}\t{}\t{}\n".format(
+                            path,
+                            position,
+                            position + 1,
+                        ))
+                        break
         f.close()
