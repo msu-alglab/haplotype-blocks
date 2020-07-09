@@ -63,10 +63,11 @@ class PanBlocks:
     * path_info: dictionary mapping from name of path (name of sample) to the
     SNP nodes in the path and the nucleotide positions of those SNP nodes on
     the genome
+    * SARS_COV2_path_info: dictionary mapping from name of path (name of
+    sample) to the SNP nodes in the path and the nucleotide positions of those
+    SNP nodes on the genome, for SARS_COV2 paths only
     * snps: a dictionary from snp nodes (both 1 and 0 versions) to selection
     coefficients
-    * snp_positions: a dictionary from snp nodes (both 1 and 0 vresions) to
-    locations
     * snp_length: length of snp encoding in mummer file
     * termination_length: length of termination character encoding in mummer
     file
@@ -324,6 +325,7 @@ class PanBlocks:
         counter = 0
         overall_max_position = 0
         self.path_info = dict()
+        self.SARS_COV2_path_info = dict()
         self.snps = dict()
         self.snp_locations = dict()
         for line in f:
@@ -342,6 +344,8 @@ class PanBlocks:
                 if max_pos > overall_max_position:
                     overall_max_position = max_pos
                 self.path_info[name] = (snps, positions)
+                if "SARS_COV2" in name:
+                    self.SARS_COV2_path_info[name] = (snps, positions)
                 for (snp, position) in zip(snps, positions):
                     self.snp_locations[snp] = position
             counter += 1
@@ -465,7 +469,12 @@ class PanBlocks:
     def compute_selection_coefficients(self):
         """Compute the selection coefficient for each block."""
         # print("Computing k values...")
+        counter = 0
         for b in self.blocks:
+            if counter % 1000 == 0:
+                print("Computed selection coefficients for {} blocks"
+                      .format(counter))
+            counter += 1
             snps = b.snps
             snps = [x[:-2] for x in snps]
             # print("--Processing block with snps {}".format(snps))
@@ -496,9 +505,15 @@ class PanBlocks:
     def set_selection_coefficients(self):
         """For each node, figure out what the max selection coefficient is."""
         # TODO: make this more efficient
+        print("There are {} snps".format(len(self.snps)))
+        counter = 0
         for snp in self.snps.keys():
             # get the max selection coeff for this node
             # print(f"Finding max selection coeff for snp {snp}")
+            if counter % 1000 == 0:
+                print("Set selection coefficients for {} snp nodes"
+                      .format(counter))
+            counter += 1
             max_s = 0
             for b in self.blocks:
                 if snp in b.snps:
@@ -605,4 +620,11 @@ class PanBlocks:
         self.write_edges(f)
         # close graph
         f.write("}")
+        f.close()
+
+    def create_bed_file(self, filename):
+        """Create a bed file for all high-selection SNPs"""
+        f = open("outputs/" + filename, "w")
+        for snp in self.snps:
+            print(snp)
         f.close()
