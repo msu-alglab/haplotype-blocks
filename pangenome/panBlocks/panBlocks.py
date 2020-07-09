@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 # TODO: make an actual python package to avoid ugly import like this
 import sys
-sys.path.insert(1, "/home/lucy/haplotype-blocks/pangenome/panBlocks")  # noqa
-import block
+home = "/Users/lucywilliams"
+sys.path.insert(1, home + "/haplotype-blocks/pangenome/panBlocks")
+import block  # noqa
 
 
 # functions used in computing all blocks
@@ -202,7 +203,7 @@ class PanBlocks:
         lines = f.readlines()
         g = nx.Graph()
         weights = []
-        print("Processing mummer file...")
+        print("Processing mummer repeats file...")
         counter = 0
         for line in lines:
             counter += 1
@@ -237,8 +238,12 @@ class PanBlocks:
                         "a long repeat not included")
         # for weight in weights:
         repeats = []
+        num_weights = len(set(weights))
+        print("There are {} distinct repeat lengths in the mummer repeats file"
+              .format(num_weights))
         for weight in set(weights):
             subgraph = nx.Graph()
+            print("Processing length {} repeats".format(weight))
             # build subgraph with ony edges this weight or greater
             for edge in g.edges(data=True):
                 node1 = edge[0]
@@ -360,7 +365,12 @@ class PanBlocks:
         """Put repeats into MPPHB form."""
         self.blocks = []
 
+        print("There are {} repeats".format(len(self.repeats)))
+        counter = 0
         for repeat in self.repeats:
+            if counter % 1000 == 0:
+                print("Processed {} repeats".format(counter))
+            counter += 1
             # get repeat info
             starts = repeat[0]
             length = repeat[1]
