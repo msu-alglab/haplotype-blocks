@@ -397,7 +397,6 @@ class PanBlocks:
                 # set snp to location from this sequence
                 # position assigned will be the last one.
                 self.snps_to_cov_position[snp] = positions[i]
-        print(self.snps_to_cov_position)
 
     def get_distance(self, names, snps):
         """For a set of paths and set of snps, return the average genetic
@@ -576,11 +575,6 @@ class PanBlocks:
             self.snps[snp] = max_s
             self.snps_to_block_ids[snp] = block_id
 
-    def print_selection_coefficients(self):
-        """Print out all selection coeffs."""
-        print("Calling print_selection_coefficients")
-        print(self.snps)
-
     def write_nodes(self, f):
         """Write the nodes of the SNP graph dotfile to file object f."""
         # write subgraph for all SNPs
@@ -588,6 +582,7 @@ class PanBlocks:
         self.snp_index_offset = max(snps)
         for snp in snps:
             # get positions in cov2 coords
+            position = self.snps_to_cov_position.get("{}:0".format(snp), -1)
             f.write("subgraph cluster_{}".format(snp) +
                     " { node [style=solid];\n")
             side_1_id = snp
@@ -603,7 +598,8 @@ class PanBlocks:
             side_0_color = '"#ff' + side_0_red_val + side_0_red_val + '"'
             f.write(
                 '{} [label="1" style=filled'.format(side_1_id) +
-                ' fillcolor={} color=black];\n'.format(side_1_color)
+                ' fillcolor={} color=black]; # {}\n'
+                .format(side_1_color, position)
             )
             f.write(
                 '{} [label="0" style=filled'.format(side_0_id) +
