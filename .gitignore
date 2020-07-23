@@ -105,6 +105,7 @@ venv.bak/
 
 # swp files
 *.swp
+*.swo
 
 # example files
 example.fa
@@ -117,3 +118,4 @@ wildcard/*.txt
 pangenome/covid19/
 pangenome/covid19-0.05p/
 pangenome/*.dot
+
