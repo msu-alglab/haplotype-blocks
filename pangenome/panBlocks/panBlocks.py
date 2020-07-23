@@ -583,8 +583,11 @@ class PanBlocks:
             side_0_id = side_1_id + self.snp_index_offset
             side_1_selection_coeff = self.snps["{}:1".format(snp)]
             side_0_selection_coeff = self.snps["{}:0".format(snp)]
-            side_1_red_val = f"{int(255 - side_1_selection_coeff * 255):0>2x}"
-            side_0_red_val = f"{int(255 - side_0_selection_coeff * 255):0>2x}"
+            max_s = 10  # the max s for any block. hard-coded in block object.
+            side_1_red_val = \
+                f"{int(255 - side_1_selection_coeff/max_s * 255):0>2x}"
+            side_0_red_val = \
+                f"{int(255 - side_0_selection_coeff/max_s * 255):0>2x}"
             side_1_color = '"#ff' + side_1_red_val + side_1_red_val + '"'
             side_0_color = '"#ff' + side_0_red_val + side_0_red_val + '"'
             f.write(
