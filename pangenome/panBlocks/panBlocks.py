@@ -69,6 +69,10 @@ class PanBlocks:
     SNP nodes on the genome, for SARS_COV2 paths only
     * snps: a dictionary from snp nodes (both 1 and 0 versions) to selection
     coefficients
+    * snps_to_block_ids: a dictionary from snp nodes (both 0 and 1) to the id
+    of the block that gave the snp's selection coeff
+    * snps_to_cov_positions: a dictionary from snp nodes to a position from a
+    cov sequence
     * snp_length: length of snp encoding in mummer file
     * termination_length: length of termination character encoding in mummer
     file
@@ -123,7 +127,6 @@ class PanBlocks:
         self.freqs = dict()
         for path_info in self.path_info.values():
             path = path_info[0]
-            print("path is", path)
             for i1 in range(len(path)):
                 snp1 = path[i1]
                 snp1_id, snp1_value = snp1.split(":")
@@ -136,11 +139,6 @@ class PanBlocks:
                     if (snp1_id, snp2_id) not in self.freqs:
                         self.freqs[snp1_id, snp2_id] = [0, 0, 0, 0]
                     self.freqs[snp1_id, snp2_id][pos_to_increment] += 1
-        print("Frequencies dict is:")
-        print(self.freqs)
-        print("Path info:")
-        for path_info in self.path_info.values():
-            print(path_info[0])
 
     def get_blocks(self):
         """Return a list of all blocks in this PanBlocks object."""
@@ -388,6 +386,18 @@ class PanBlocks:
             counter += 1
             counter = counter % 3
         self.genome_length = overall_max_position
+        self.create_snp_to_cov_position()
+
+    def create_snp_to_cov_position(self):
+        """Once the SARS_COV2_path_info dict is created, use it to create a
+        dictionary from SNPs to a cov2 location."""
+        self.snps_to_cov_position = dict()
+        for snps, positions in self.SARS_COV2_path_info.values():
+            for i, snp in enumerate(snps):
+                # set snp to location from this sequence
+                # position assigned will be the last one.
+                self.snps_to_cov_position[snp] = positions[i]
+        print(self.snps_to_cov_position)
 
     def get_distance(self, names, snps):
         """For a set of paths and set of snps, return the average genetic
@@ -577,13 +587,14 @@ class PanBlocks:
         snps = list(set([int(x.split(":")[0]) for x in self.snps.keys()]))
         self.snp_index_offset = max(snps)
         for snp in snps:
+            # get positions in cov2 coords
             f.write("subgraph cluster_{}".format(snp) +
                     " { node [style=solid];\n")
             side_1_id = snp
             side_0_id = side_1_id + self.snp_index_offset
             side_1_selection_coeff = self.snps["{}:1".format(snp)]
             side_0_selection_coeff = self.snps["{}:0".format(snp)]
-            max_s = 10  # the max s for any block. hard-coded in block object.
+            max_s = 2  # the max s for any block TODO get from data
             side_1_red_val = \
                 f"{int(255 - side_1_selection_coeff/max_s * 255):0>2x}"
             side_0_red_val = \
@@ -630,7 +641,7 @@ class PanBlocks:
                     id2 = snp2 + self.snp_index_offset
                 else:
                     id2 = snp2
-                # only label first node
+                # only label first edge
                 if first_node:
                     f.write(
                         '{} -> {} [label = "{}" color="{}"]\n'

@@ -66,7 +66,7 @@ class Block:
                 mult1 = 1/s
                 to_log = (self.y_t*(1 - self.y_0))/(self.y_0*(1 - self.y_t))
                 if to_log > 0:
-                # if not, just do nothing
+                    # if not, just do nothing
                     mult2 = math.log(to_log)
                     t = mult1 * mult2
                     summand_1 = -self.r * t
@@ -103,9 +103,8 @@ class Block:
             self.r = (1 - math.exp(-self.length/20000)) / 2
         elif method == "frequency":
             # compute recombination fraction based on the data given
-            print("SNPs for this block", self.snps)
             numerator = min(freqs[0] + freqs[3], freqs[1] + freqs[2])
             self.r = numerator / sum(freqs)
-            print(self.r)
+            # print(self.r)
             assert self.r >= 0
             assert self.r <= 0.5
