@@ -575,7 +575,7 @@ class PanBlocks:
             self.snps[snp] = max_s
             self.snps_to_block_ids[snp] = block_id
 
-    def write_nodes(self, f):
+    def write_nodes(self, f, start_pos, end_pos):
         """Write the nodes of the SNP graph dotfile to file object f."""
         # write subgraph for all SNPs
         snps = list(set([int(x.split(":")[0]) for x in self.snps.keys()]))
@@ -583,53 +583,50 @@ class PanBlocks:
         for snp in snps:
             # get positions in cov2 coords
             position = self.snps_to_cov_position.get("{}:0".format(snp), -1)
-            f.write("subgraph cluster_{}".format(snp) +
-                    " { node [style=solid];\n")
-            side_1_id = snp
-            side_0_id = side_1_id + self.snp_index_offset
-            side_1_selection_coeff = self.snps["{}:1".format(snp)]
-            side_0_selection_coeff = self.snps["{}:0".format(snp)]
-            max_s = 2  # the max s for any block TODO get from data
-            side_1_red_val = \
-                f"{int(255 - side_1_selection_coeff/max_s * 255):0>2x}"
-            side_0_red_val = \
-                f"{int(255 - side_0_selection_coeff/max_s * 255):0>2x}"
-            side_1_color = '"#ff' + side_1_red_val + side_1_red_val + '"'
-            side_0_color = '"#ff' + side_0_red_val + side_0_red_val + '"'
-            f.write(
-                '{} [label="1" style=filled'.format(side_1_id) +
-                ' fillcolor={} color=black]; # {}\n'
-                .format(side_1_color, position)
-            )
-            f.write(
-                '{} [label="0" style=filled'.format(side_0_id) +
-                ' fillcolor={} color=black];\n'.format(side_0_color)
-            )
-            f.write('label="SNP {}";\n}}\n\n'.format(snp))
+            if position >= start_pos and position <= end_pos:
+                f.write("subgraph cluster_{}".format(snp) +
+                        " { node [style=solid];\n")
+                side_1_id = snp
+                side_0_id = side_1_id + self.snp_index_offset
+                side_1_selection_coeff = self.snps["{}:1".format(snp)]
+                side_0_selection_coeff = self.snps["{}:0".format(snp)]
+                max_s = 2  # the max s for any block TODO get from data
+                side_1_red_val = \
+                    f"{int(255 - side_1_selection_coeff/max_s * 255):0>2x}"
+                side_0_red_val = \
+                    f"{int(255 - side_0_selection_coeff/max_s * 255):0>2x}"
+                side_1_color = '"#ff' + side_1_red_val + side_1_red_val + '"'
+                side_0_color = '"#ff' + side_0_red_val + side_0_red_val + '"'
+                f.write(
+                    '{} [label="1" style=filled'.format(side_1_id) +
+                    ' fillcolor={} color=black]; # {}\n'
+                    .format(side_1_color, position)
+                )
+                f.write(
+                    '{} [label="0" style=filled'.format(side_0_id) +
+                    ' fillcolor={} color=black];\n'.format(side_0_color)
+                )
+                f.write('label="SNP {}";\n}}\n\n'.format(snp))
 
-    def write_edges(self, f):
+    def write_edges(self, f, start_pos, end_pos):
         """Write the edges of the SNP graph dotfile to file object f."""
-        f.write('subgraph base {\n')
-        # a list of visually different colors. There may not be enough for
-        # every path to be a distinct color.
-        # generated using colorogical: http://vrl.cs.brown.edu/color
-        colors = ["#72e5ef", "#6e3638", "#b3e61c", "#322cbf", "#7b9b47",
-                  "#f90da0", "#47f0a3", "#bf012a", "#65f112", "#d25bfc",
-                  "#096013", "#f7c5f1", "#2aa63a", "#c95e9f", "#c7dd91",
-                  "#8a0458", "#fbbd13", "#657bec", "#f87945", "#2f5672",
-                  "#e7ad79", "#059dc5", "#ac85a3", "#464a15"]
-        index = 0
+        f.write('subgraph base { edge [color="grey"];\n')
+        edges = []
         for pathname, path_info in self.path_info.items():
             path = path_info[0]
             node_1 = path[0]
             snp1 = int(node_1.split(":")[0])
             side1 = int(node_1.split(":")[1])
+            position1 = self.snps_to_cov_position.get(
+                "{}:0".format(snp1), -1)
             if side1 == 0:
                 id1 = snp1 + self.snp_index_offset
+                print("side1=0 for snp {}, setting id to {}".format(
+                      snp1, id1))
             else:
                 id1 = snp1
-            first_node = True
             for node in path[1:]:
+                # update ids as we traverse through
                 node_2 = node
                 snp2 = int(node_2.split(":")[0])
                 side2 = int(node_2.split(":")[1])
@@ -638,29 +635,31 @@ class PanBlocks:
                 else:
                     id2 = snp2
                 # only label first edge
-                if first_node:
-                    f.write(
-                        '{} -> {} [label = "{}" color="{}"]\n'
-                        .format(id1,
-                                id2, pathname, colors[index]))
-                else:
-                    f.write(
-                        '{} -> {} [color="{}"]\n'
-                        .format(id1, id2, colors[index]))
+                # only write if node1 and node2 are in range
+                position2 = self.snps_to_cov_position.get(
+                    "{}:0".format(snp2), -1)
+                print(snp1, side1, position1, id1, snp2, side2, position2, id2)
+                if position1 >= start_pos\
+                        and position1 <= end_pos\
+                        and position2 >= start_pos\
+                        and position2 <= end_pos:
+                    if (id1, id2) not in edges:
+                        edges.append((id1, id2))
+                        f.write(
+                            '{} -> {}\n'.format(id1, id2))
                 id1 = id2
-                first_node = False
-            index = (index + 1) % len(colors)
+                position1 = position2
         f.write('}\n')
 
-    def create_dot_file(self, filename):
+    def create_dot_file(self, filename, start_pos=-2, end_pos=100000000):
         """Create a dotfile of the SNP graph, where nodes are colored by
         selection coefficient value."""
         f = open(filename, "w")
         # open graph
         f.write("digraph {\n\n")
         # write nodes and edges
-        self.write_nodes(f)
-        self.write_edges(f)
+        self.write_nodes(f, start_pos, end_pos)
+        self.write_edges(f, start_pos, end_pos)
         # close graph
         f.write("}")
         f.close()
