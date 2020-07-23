@@ -1,8 +1,6 @@
-import networkx as nx
-import matplotlib.pyplot as plt
-import numpy as np
 # TODO: make an actual python package to avoid ugly import like this
 import sys
+import networkx as nx
 home = "/Users/lucywilliams"
 sys.path.insert(1, home + "/haplotype-blocks/pangenome/panBlocks")
 import block  # noqa
@@ -58,6 +56,9 @@ class PanBlocks:
     * repeats_filename
     * pathlocs_filename
     * path_filename
+    * r_method
+    * frequencies: a dictionary with pairs of snps as keys and a list of four
+    frequencies as values
     * k
     * min_length
     * path_info: dictionary mapping from name of path (name of sample) to the
@@ -80,7 +81,8 @@ class PanBlocks:
     when creating a dotfile.
     """
 
-    def __init__(self, mummer_filename, repeats_filename):
+    def __init__(self, mummer_filename, repeats_filename, y_0,
+                 r_method="frequency"):
         # set filenames from input
         self.mummer_filename = mummer_filename
         self.repeats_filename = repeats_filename
@@ -92,9 +94,10 @@ class PanBlocks:
         # infer k (de bruijn graph parameter) and repeat length from filenames
         # TODO: filenames are not consistent. this is broken.
         self.k = mummer_filename.split(".")[1][1:]
-        self.min_length = repeats_filename.split(".")[2]
-        # get path info from pathlocs and path files
-        # also get genome length
+        # currently we assume that the minimum length of a repeat when running
+        # mummer was always set to 19.
+        self.min_length = 19
+        # get path info from pathlocs and path files and  get genome length
         self.get_path_info()
         # set all_paths from path_info
         self.all_paths = [x[0] for x in self.path_info.values()]
@@ -102,12 +105,42 @@ class PanBlocks:
         # file
         self.get_mummer_params()
         assert self.termination_length != 1
-        # get a long string of the mu mmer-encoded fasta file of paths through
+        # read in a long string from mummer-encoded fasta file of paths through
         # SNP graph
         self.get_long_string()
         # get two dictionaries: one from start/end position to path ids and one
         # from start/end position to path names
         self.get_path_locs()
+        # set the method that we use to find r
+        self.r_method = r_method
+        if self.r_method == "frequency":
+            self.create_freq_dict()
+        self.y_0 = y_0
+
+    def create_freq_dict(self):
+        """Create a dictionary with pairs of SNPs as keys and a list of
+        frequencies as values."""
+        self.freqs = dict()
+        for path_info in self.path_info.values():
+            path = path_info[0]
+            print("path is", path)
+            for i1 in range(len(path)):
+                snp1 = path[i1]
+                snp1_id, snp1_value = snp1.split(":")
+                for i2 in range(i1, len(path)):
+                    snp2 = path[i2]
+                    snp2_id, snp2_value = snp2.split(":")
+                    # positions: 00 is 0 index, 01 is 1 index, 10 is 2 index,
+                    # 11 is 3 index
+                    pos_to_increment = 2*int(snp1_value) + int(snp2_value)
+                    if (snp1_id, snp2_id) not in self.freqs:
+                        self.freqs[snp1_id, snp2_id] = [0, 0, 0, 0]
+                    self.freqs[snp1_id, snp2_id][pos_to_increment] += 1
+        print("Frequencies dict is:")
+        print(self.freqs)
+        print("Path info:")
+        for path_info in self.path_info.values():
+            print(path_info[0])
 
     def get_blocks(self):
         """Return a list of all blocks in this PanBlocks object."""
@@ -188,7 +221,7 @@ class PanBlocks:
 
     def write_blocks_to_file(self, filename):
         """Print out the blocks."""
-        f = open("outputs/" + filename, "w")
+        f = open(filename, "w")
         for b in self.blocks:
             b.write_to_file(f)
         f.close()
@@ -210,12 +243,14 @@ class PanBlocks:
             counter += 1
             if counter % 100000 == 0:
                 print("Looking at line {} of mummer file".format(counter))
+            # mummer repeats file lists the start of the first repeat, start of
+            # second repeat, and length. starts are indexed beginning at 1.
             start1 = int(line.split()[0]) - 1
             start2 = int(line.split()[1]) - 1
             length = int(line.split()[2])
             self.check_this_match(start1, start2, length)
             og_length = length
-            # crop this repeat
+            # crop this repeat to contain just a list of SNPs
             crop_start, crop_end = self.crop(start1, length,)
             # new start, end length
             start1 = start1 + crop_start
@@ -244,7 +279,7 @@ class PanBlocks:
               .format(num_weights))
         for weight in set(weights):
             subgraph = nx.Graph()
-            print("Processing length {} repeats".format(weight))
+            print("----Processing length {} repeats".format(weight))
             # build subgraph with ony edges this weight or greater
             for edge in g.edges(data=True):
                 node1 = edge[0]
@@ -327,6 +362,7 @@ class PanBlocks:
         self.path_info = dict()
         self.SARS_COV2_path_info = dict()
         self.snps = dict()
+        self.snps_to_block_ids = dict()
         self.snp_locations = dict()
         for line in f:
             if counter == 0:
@@ -337,6 +373,7 @@ class PanBlocks:
                 snps = line.strip().split()
                 for snp in snps:
                     self.snps[snp] = 0
+                    self.snps_to_block_ids[snp] = 0
             elif counter == 2:
                 # start positions of snps
                 positions = [int(x) for x in line.strip().split()]
@@ -352,18 +389,21 @@ class PanBlocks:
             counter = counter % 3
         self.genome_length = overall_max_position
 
-    def get_position(self, name, snps):
-        """For a given path and set of snps, return the genetic positions at
-        the start and end of the set of snps, based on the path."""
+    def get_distance(self, names, snps):
+        """For a set of paths and set of snps, return the average genetic
+        distance between start and end snps in the paths."""
         # name is the name of one of the paths with this block. snps is the
         # snps in the block.
         # need to look up the positions from path_info dict
-        info = self.path_info[name]
-        path_snps = info[0]
-        index = path_snps.index(snps[0])
-        start_position = info[1][index]
-        end_position = info[1][index + len(snps) - 1]
-        return (start_position, end_position)
+        distances = []
+        for name in names:
+            info = self.path_info[name]
+            path_snps = info[0]
+            index = path_snps.index(snps[0])
+            start_position = info[1][index]
+            end_position = info[1][index + len(snps) - 1]
+            distances.append(end_position - start_position)
+        return sum(distances)/len(distances)
 
     def compute_blocks(self, test=False):
         """Put repeats into MPPHB form."""
@@ -373,7 +413,8 @@ class PanBlocks:
         counter = 0
         for repeat in self.repeats:
             if counter % 1000 == 0:
-                print("Processed {} repeats".format(counter))
+                if len(self.repeats) > 1000:
+                    print("Processed {} repeats".format(counter))
             counter += 1
             # get repeat info
             starts = repeat[0]
@@ -390,15 +431,36 @@ class PanBlocks:
                                                              length, occ)
             # figure out which snps
             snps = self.decode_snps(occ)
-            # figure out the location on the genome of the first and last snp
-            gen_pos1, gen_pos2 = self.get_position(names[0], snps)
-            distance = gen_pos2 - gen_pos1
+            # if this is actually a block (at least 1 snp and at least two
+            # paths):
             if len(snps) > 0 and len(set(indices)) > 1:
-                self.blocks.append(block.Block(snps,
-                                               list(set(indices)),
-                                               list(set(names)),
-                                               distance,
-                                               self.genome_length))
+
+                # create Block differently based on r_method
+                if self.r_method == "distance":
+                    # figure out location on the genome of first and last snp
+                    distance = self.get_distance(names, snps)
+                    # create block with these snps, these path indices and
+                    # names, and computed length and overall genome length
+                    self.blocks.append(block.Block(snps,
+                                                   list(set(indices)),
+                                                   list(set(names)),
+                                                   self.r_method,
+                                                   self.y_0,
+                                                   distance,
+                                                   self.genome_length))
+                elif self.r_method == "frequency":
+                    # we have a dictoinary with keys [(startsnp, endsnp)]
+                    # pointing to a list of frequencies for this pair
+                    snp1 = snps[0].split(":")[0]
+                    snp2 = snps[-1].split(":")[0]
+                    distance = self.get_distance(names, snps)
+                    self.blocks.append(block.Block(snps,
+                                       list(set(indices)),
+                                       list(set(names)),
+                                       self.r_method,
+                                       self.y_0,
+                                       freqs=self.freqs[(snp1, snp2)],
+                                       length=distance))
 
     def check_repeats_while_processing(self, starts, length, occ):
         """Given a set of repeats, check that they all match."""
@@ -472,35 +534,15 @@ class PanBlocks:
         counter = 0
         for b in self.blocks:
             if counter % 1000 == 0:
-                print("Computed selection coefficients for {} blocks"
-                      .format(counter))
+                if len(self.blocks) > 1000:
+                    print("Computed selection coefficients for {} blocks"
+                          .format(counter))
             counter += 1
             snps = b.snps
             snps = [x[:-2] for x in snps]
             # print("--Processing block with snps {}".format(snps))
             k = self.compute_k(snps)
             b.compute_selection_coefficient(k)
-
-    def plot_snps_vs_paths_scatter(self, filename=None):
-        """Create a scatterplot of all blocks in PanBlocks object,
-        with number of paths on the x axis and number of snps on the y axis"""
-        # if no filename provided, write to wherever the mummer file is
-        if filename is None:
-            filename = self.mummer_filename + "scatterplot.pdf"
-        # x values are number of paths in the block, y are number of snps
-        x = np.empty(self.get_num_blocks())
-        y = np.empty(self.get_num_blocks())
-        for i, b in enumerate(self.get_blocks()):
-            x[i] = len(b.snps)
-            y[i] = len(b.paths)
-        plt.scatter(x, y, c="red", alpha=0.5, label="k={}".format(25))
-        plt.xlabel("Number of SNPs")
-        plt.ylabel("Number of paths")
-        plt.legend()
-        # set title to mummer filename. TODO: better title
-        plt.title(self.mummer_filename)
-        print("Saving scatterplot as {}".format(filename))
-        plt.savefig(filename)
 
     def set_selection_coefficients(self):
         """For each node, figure out what the max selection coefficient is."""
@@ -511,32 +553,23 @@ class PanBlocks:
             # get the max selection coeff for this node
             # print(f"Finding max selection coeff for snp {snp}")
             if counter % 1000 == 0:
-                print("Set selection coefficients for {} snp nodes"
-                      .format(counter))
+                if len(self.snps) > 1000:
+                    print("Set selection coefficients for {} snp nodes"
+                          .format(counter))
             counter += 1
             max_s = 0
-            for b in self.blocks:
+            for i, b in enumerate(self.blocks):
                 if snp in b.snps:
                     if b.selection_coefficient > max_s:
                         max_s = b.selection_coefficient
+                        block_id = i
             self.snps[snp] = max_s
+            self.snps_to_block_ids[snp] = block_id
 
     def print_selection_coefficients(self):
         """Print out all selection coeffs."""
         print("Calling print_selection_coefficients")
         print(self.snps)
-
-    def generate_hists(self):
-        """Make a histogram of selection coeffs by snp and by block"""
-        plt.subplot(211)
-        plt.hist(self.snps.values())
-        plt.subplot(212)
-        # get all selection coeffs from blocks
-        coeffs = []
-        for b in self.blocks:
-            coeffs.append(b.selection_coefficient)
-        plt.hist(coeffs)
-        plt.savefig("snp_selection_coeffs.png")
 
     def write_nodes(self, f):
         """Write the nodes of the SNP graph dotfile to file object f."""
@@ -578,7 +611,6 @@ class PanBlocks:
         index = 0
         for pathname, path_info in self.path_info.items():
             path = path_info[0]
-            label = pathname.split("|")[1]
             node_1 = path[0]
             snp1 = int(node_1.split(":")[0])
             side1 = int(node_1.split(":")[1])
@@ -599,7 +631,8 @@ class PanBlocks:
                 if first_node:
                     f.write(
                         '{} -> {} [label = "{}" color="{}"]\n'
-                        .format(id1, id2, label, colors[index]))
+                        .format(id1,
+                                id2, pathname, colors[index]))
                 else:
                     f.write(
                         '{} -> {} [color="{}"]\n'
@@ -612,7 +645,7 @@ class PanBlocks:
     def create_dot_file(self, filename):
         """Create a dotfile of the SNP graph, where nodes are colored by
         selection coefficient value."""
-        f = open("outputs/" + filename, "w")
+        f = open(filename, "w")
         # open graph
         f.write("digraph {\n\n")
         # write nodes and edges
@@ -622,19 +655,65 @@ class PanBlocks:
         f.write("}")
         f.close()
 
-    def create_bed_file(self, filename):
-        """Create a bed file for all high-selection SNPs"""
-        f = open("outputs/" + filename, "w")
+    # TODO: there are currently just two different ways for creating bed files:
+    # one for yeast and one for covid19 data. This is because for yeast, we
+    # just want the fewest possible different labels, so we use the first label
+    # alphabetically. For covid19, we want SARS_COV2 pathnames only. This
+    # should probably be done isn a nicer way.
+    def create_bed_file_yeast(self, filename):
+        """Create a bed file for all high-selection SNPs from a yeast data set
+        (so prefer small number of sequences)"""
+        f = open(filename, "w")
         for snp in self.snps:
-            if self.snps[snp] > 0.1:
-                for path, path_info in self.SARS_COV2_path_info.items():
-                    if snp in path_info[0]:
-                        index = path_info[0].index(snp)
-                        position = path_info[1][index]
-                        f.write("{}\t{}\t{}\n".format(
-                            path,
-                            position,
-                            position + 1,
-                        ))
-                        break
+            ordered_path_info = sorted(self.path_info.items())
+            for path, path_info in ordered_path_info:
+                if snp in path_info[0]:
+                    index = path_info[0].index(snp)
+                    position = path_info[1][index]
+                    f.write("{}\t{}\t{}\t{}\t{}\n".format(
+                        path,
+                        position,
+                        position + 1,
+                        self.snps[snp],
+                        self.snps_to_block_ids[snp]
+                    ))
+                    break
+        f.close()
+
+    def create_bed_file(self, filename):
+        """Create a bed file for snps of all paths"""
+        f = open(filename, "w")
+        for path, path_info in self.SARS_COV2_path_info.items():
+            for i, snp in enumerate(path_info[0]):
+                position = path_info[1][i]
+                f.write("{}\t{}\t{}\t{}\t{}\n".format(
+                    path,
+                    position,
+                    position + 1,
+                    self.snps[snp],
+                    self.snps_to_block_ids[snp]
+                ))
+        f.close()
+
+    def create_block_dataset(self, filename):
+        """Create a csv file containing a lot of data about each block"""
+        f = open(filename, "w")
+        f.write("num_snps,num_paths,bp_length,pop_size,y_t,r,s\n")
+        for b in self.get_blocks():
+            num_snps = len(b.snps)
+            num_paths = len(b.paths)
+            bp_length = b.length
+            s = b.selection_coefficient
+            pop_size = b.pop_size
+            y_t = b.y_t
+            r = b.r
+            f.write("{},{},{},{},{},{},{}\n".format(
+                num_snps,
+                num_paths,
+                bp_length,
+                pop_size,
+                y_t,
+                r,
+                s
+                ))
         f.close()
