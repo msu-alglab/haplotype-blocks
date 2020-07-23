@@ -621,8 +621,6 @@ class PanBlocks:
                 "{}:0".format(snp1), -1)
             if side1 == 0:
                 id1 = snp1 + self.snp_index_offset
-                print("side1=0 for snp {}, setting id to {}".format(
-                      snp1, id1))
             else:
                 id1 = snp1
             for node in path[1:]:
@@ -638,7 +636,6 @@ class PanBlocks:
                 # only write if node1 and node2 are in range
                 position2 = self.snps_to_cov_position.get(
                     "{}:0".format(snp2), -1)
-                print(snp1, side1, position1, id1, snp2, side2, position2, id2)
                 if position1 >= start_pos\
                         and position1 <= end_pos\
                         and position2 >= start_pos\
